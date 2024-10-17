@@ -84,8 +84,8 @@
                 const q = query(fileCollection, where("uid", "==", user.uid));
                 const querySnapshot = await getDocs(q);
 
-                querySnapshot.forEach((doc) => {
-                    const fileData = doc.data();
+                querySnapshot.forEach((docSnapshot) => {
+                    const fileData = docSnapshot.data();
 
                     // Create a list item
                     const li = document.createElement('li');
@@ -104,7 +104,7 @@
                             const storageRef = ref(storage, 'documents/' + fileData.name);
                             await deleteObject(storageRef);
                             // Delete from Firestore
-                            const docRef = doc(fileCollection, link.textContent, link.href, user.uid);
+                            const docRef = doc(fileCollection, docSnapshot.id);
                             await deleteDoc(docRef);
                             // Remove the list item from the DOM
                             fileList.removeChild(li);
