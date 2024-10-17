@@ -75,7 +75,6 @@
 
         async function uploadDocument(event) {
             event.preventDefault();
-
             const fileInput = document.createElement('input');
             fileInput.type = 'file';
             fileInput.accept = 'application/pdf, application/msword, text/plain';
@@ -83,42 +82,50 @@
                 const file = e.target.files[0];
                 if (file) {
                     try {
-                        const storageRef = ref(storage, `documents/${file.name}`);
+                        const auth = getAuth();
+                        const user = auth.currentUser;
+
+                        if (!user) {
+                        console.error("No user is logged in!");
+                        return;
+                        }
+
+                        const storageRef = ref(storage, `documents/${user.uid}/${file.name}`);
                         const uploadTask = uploadBytesResumable(storageRef, file);
 
-                        uploadTask.on('state_changed', 
-                            (snapshot) => {
-                            }, 
-                            (error) => {
-                                console.error("Error during file upload:", error);
-                            }, 
-                            async () => {
-                                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                                await addDoc(collection(db, "documents"), {
-                                    name: file.name,
-                                    url: downloadURL,
-                                    created: Date.now()
-                                });
-                            }
+                        uploadTask.on('state_changed',
+                        (snapshot) => {
+                        },
+                        (error) => {
+                            console.error("Error during file upload:", error);
+                        },
+                        async () => {
+                            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                            await addDoc(collection(db, "documents"), {
+                            userId: user.uid,
+                            name: file.name,
+                            url: downloadURL,
+                            created: Date.now()
+                            });
+                        }
                         );
                     } catch (error) {
                         console.error("Error uploading document:", error);
                     }
                 }
             };
-
             fileInput.click();
         }
 
         function loadDocuments() {
             const documentList = document.getElementById('document-list');
+            
             onSnapshot(collection(db, "documents"), (snapshot) => {
-                documentList.innerHTML = ''; // Clear the list before repopulating
+                documentList.innerHTML = '';
                 snapshot.forEach((doc) => {
                     const li = document.createElement('li');
                     li.textContent = doc.data().name;
                     li.onclick = () => {
-                        // Open the document URL in a new tab
                         window.open(doc.data().url, '_blank');
                     };
                     documentList.appendChild(li);
