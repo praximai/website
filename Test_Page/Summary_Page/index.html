@@ -104,7 +104,7 @@
                             const storageRef = ref(storage, 'documents/' + fileData.name);
                             await deleteObject(storageRef);
                             // Delete from Firestore
-                            const docRef = doc(fileCollection, doc.id);
+                            const docRef = doc(fileCollection, link.textContent, link.href, user.uid);
                             await deleteDoc(docRef);
                             // Remove the list item from the DOM
                             fileList.removeChild(li);
