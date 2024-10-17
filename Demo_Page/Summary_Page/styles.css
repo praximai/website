@@ -2,51 +2,51 @@ body {
     background-color: #6ae7e7;
     margin: 0;
     font-family: 'Times New Roman', Times, serif;
-  }
-  
-  header {
+}
+
+header {
     background: #0a15df;
     padding: 10px 20px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-  
-  .container {
+}
+
+.container {
     display: flex;
     justify-content: space-between;
     align-items: center;
-  }
-  
-  .logo a {
+}
+
+.logo a {
     text-decoration: none;
     font-size: 24px;
     font-weight: bold;
     color: #212b36;
-  }
-  
-  .navigation a {
+}
+
+.navigation a {
     text-decoration: none;
     margin-left: 20px;
     font-size: 18px;
     color: #212b36;
-  }
-  
-  main {
+}
+
+main {
     display: flex;
     height: 80vh;
-  }
-  
-  #left-div, #right-div {
+}
+
+#left-div, #right-div {
     flex: 1;
     padding: 20px;
     text-align: center;
     overflow-y: auto;
     box-sizing: border-box;
-  }
-  
-  #left-div {
+}
+
+#left-div {
     background-color: #cce7ff;
-  }
-  
-  #right-div {
-    background-color: #f0e68c;
-  }
+}
+
+#right-div {
+    background-color: #a8f08c;
+}
