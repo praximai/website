@@ -5,90 +5,93 @@ body {
     margin: 0;
     background-color: #6ae7e7;
     font-family: 'Times New Roman', Times, serif;
-}
-
-header {
+  }
+  
+  header {
     background: #0a15df;
     padding: 10px 20px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     flex-shrink: 0;
-}
-
-.container {
+  }
+  
+  .container {
     display: flex;
     justify-content: space-between;
     align-items: center;
-}
-
-.logo a {
+  }
+  
+  .logo a {
     text-decoration: none;
     font-size: 24px;
     font-weight: bold;
     color: #212b36;
-}
-
-.navigation a {
+  }
+  
+  .navigation a {
     text-decoration: none;
     margin-left: 20px;
     font-size: 18px;
     color: #212b36;
-}
-
-main {
+  }
+  
+  main {
     display: flex;
     flex: 1;
     overflow: hidden;
     height: calc(100vh - 10);
     flex-shrink: 0;
-}
-
-#left-div, #right-div {
+  }
+  
+  #left-div, #right-div {
     flex: 1;
+    display: flex;
     text-align: center;
     overflow-y: auto;
     box-sizing: border-box;
-}
-
-#left-div {
+  }
+  
+  #left-div {
     background-color: #cce7ff;
-}
-
-#right-div {
+  }
+  
+  #right-div {
     background-color: #a8f08c;
-}
-
-#sidebar {
-    width: 250px;
+  }
+  
+  #sidebar {
+    width: 150px;
     background-color: #e0e0e0;
-    height: 100%;
-    padding: 10px;
+    padding: 5px;
     box-sizing: border-box;
     overflow-y: auto;
-    position: fixed;
-}
-
-#upload-button {
+    flex-basis: 75px; /* Prevent shrinking to 0 */
+    flex-shrink: 0;
+  }
+  
+  #upload-button {
     width: 100%;
-    padding: 10px;
-    margin-bottom: 10px;
+    padding: 5px;
+    margin-bottom: 5px;
     cursor: pointer;
     background-color: #4CAF50;
     color: white;
     border: none;
     border-radius: 5px;
-    font-size: 16px;
-}
-
-#document-list {
+    font-size: 8px;
+  }
+  
+  #document-list {
     list-style-type: none;
     padding: 0;
-}
-
-#document-list li {
-    margin: 5px 0;
-    padding: 10px;
+  }
+  
+  #document-list li {
+    margin: 2px 0;
+    padding: 4px;
     background-color: #fff;
     border: 1px solid #ccc;
-    border-radius: 5px;
+    border-radius: 2px;
     cursor: pointer;
-}
+    font-family: 'Arial', sans-serif;
+    font-size: 7px;
+  }
