@@ -45,7 +45,6 @@ main {
 
 #left-div, #right-div {
     flex: 1;
-    padding: 20px;
     text-align: center;
     overflow-y: auto;
     box-sizing: border-box;
