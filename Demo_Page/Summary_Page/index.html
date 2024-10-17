@@ -79,7 +79,8 @@
         };
 
         async function uploadFile(userId) {
-            const file = document.getElementById('fileInput').files[0];
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput ? fileInput.files[0] : null;
             if (file) {
                 const storageRef = ref(storage, `documents/${userId}/${file.name}`);
                 try {
@@ -121,13 +122,12 @@
             }
         }
 
-        document.getElementById('upload-button').addEventListener('click', () => {
-            const user = auth.currentUser;
-            if (user) {
-                uploadFile(user.uid);
-            } else {
-                alert("No user logged in. Please log in first.");
-            }
+        document.addEventListener('DOMContentLoaded', () => {
+            // Example: call uploadFile when a button is clicked
+            document.getElementById('upload-button').addEventListener('click', () => {
+                const userId = 'exampleUserId'; // replace with the actual user ID
+                uploadFile(userId);
+            });
         });
     </script>
 </body>
