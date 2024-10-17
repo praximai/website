@@ -81,14 +81,22 @@
                     const deleteButton = document.createElement('button');
                     deleteButton.textContent = 'Delete';
                     deleteButton.onclick = async function () {
-                        // Delete from storage
-                        const storageRef = ref(storage, 'documents/' + fileData.name);
-                        await deleteObject(storageRef);
+                        try {
+                            // Delete from storage
+                            const storageRef = ref(storage, 'documents/' + fileData.name);
+                            await deleteObject(storageRef);
 
-                        // Delete from Firestore
-                        await deleteDoc(doc(fileCollection, doc.id));
+                            // Delete from Firestore
+                            await deleteDoc(doc(db, 'pdfFiles', doc.id));
 
-                        listDocuments(); // Refresh the list after deletion
+                            // Remove the list item from the DOM
+                            fileList.removeChild(li);
+                            
+                            console.log('File and metadata deleted successfully.');
+                        } catch (error) {
+                            console.error('Error deleting document/file:', error);
+                            alert('Error deleting the file. Please try again.');
+                        }
                     };
 
                     // Append the link and delete button to the list item
