@@ -6,9 +6,6 @@
     <title>Firebase PDF Upload with Modules</title>
 </head>
 <body>
-    <input type="file" id="fileUpload" accept=".pdf" style="display:none;" onchange="uploadPDF()">
-    <button onclick="document.getElementById('fileUpload').click();">Upload PDF</button>
-    <button onclick="logOut()">Log Out</button>
     <h2>Uploaded Documents</h2>
     <ul id="fileList"></ul>
 
@@ -39,7 +36,7 @@
         const fileCollection = collection(db, 'pdfFiles');
 
         // Function to upload a PDF
-        async function uploadPDF() {
+        window.uploadPDF = async function () {
             const fileInput = document.getElementById('fileUpload');
             const file = fileInput.files[0];
 
@@ -130,5 +127,8 @@
         // Load the documents list when the page loads
         document.addEventListener('DOMContentLoaded', listDocuments);
     </script>
+    <input type="file" id="fileUpload" accept=".pdf" style="display:none;" onchange="uploadPDF()">
+    <button onclick="document.getElementById('fileUpload').click();">Upload PDF</button>
+    <button onclick="logOut()">Log Out</button>
 </body>
 </html>
