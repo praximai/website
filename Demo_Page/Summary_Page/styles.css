@@ -56,3 +56,39 @@ main {
 #right-div {
     background-color: #a8f08c;
 }
+
+#sidebar {
+    width: 250px;
+    background-color: #e0e0e0;
+    height: 100%;
+    padding: 10px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    position: fixed;
+}
+
+#upload-button {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 16px;
+}
+
+#document-list {
+    list-style-type: none;
+    padding: 0;
+}
+
+#document-list li {
+    margin: 5px 0;
+    padding: 10px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    cursor: pointer;
+}
