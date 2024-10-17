@@ -1,0 +1,126 @@
+<style>
+    .footer a[href*="github.com"] {
+        display: none;
+    }
+</style>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF Upload</title>
+  <!-- Add Firebase scripts -->
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js"></script>
+</head>
+<body>
+    <input type="file" id="fileUpload" accept=".pdf" style="display:none;" onchange="uploadPDF()">
+    <button onclick="document.getElementById('fileUpload').click();">Upload PDF</button>
+    <button onclick="logOut()">Log Out</button>
+    <h2>Uploaded Documents</h2>
+    <ul id="fileList"></ul>
+
+  <script>
+    // Firebase configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyBZvsBcAoIJLbQc4yINQz78oyCovB4RDTA",
+        authDomain: "praximai-438817.firebaseapp.com",
+        projectId: "praximai-438817",
+        storageBucket: "praximai-438817.appspot.com",
+        messagingSenderId: "274586621759",
+        appId: "1:274586621759:web:b9f20b3da3329327eba58a",
+        measurementId: "G-EQ7HTDC8T3"
+    };
+
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const storage = firebase.storage();
+
+    // Handle authentication
+    firebase.auth().onAuthStateChanged((user) => {
+      if (!user) {
+        window.location.href = "../"; // Redirect to homepage or login page if not authenticated
+      }
+    });
+
+    // Logout function
+    window.logOut = function() {
+      firebase.auth().signOut().then(() => {
+        window.location.href = "../"; // Redirect to homepage or login page after logout
+      }).catch((error) => {
+        console.error("Error during logout", error);
+      });
+    };
+
+    // PDF upload function
+    function uploadPDF() {
+      const fileInput = document.getElementById('fileUpload');
+      const file = fileInput.files[0];
+
+      if (!file) {
+        alert("No file selected!");
+        return;
+      }
+
+      const user = firebase.auth().currentUser;
+      if (user) {
+        const userId = user.uid;
+        const storageRef = storage.ref(`${userId}/${file.name}`);
+
+        // Upload the file
+        storageRef.put(file).then(snapshot => {
+          console.log('Uploaded a PDF file!');
+          alert('PDF uploaded successfully!');
+          listUserFiles(userId);
+        }).catch(error => {
+          console.error('Upload failed:', error);
+        });
+      } else {
+        alert("User is not authenticated!");
+      }
+    }
+    function listUserFiles(userId) {
+      const storageRef = storage.ref(userId);
+      storageRef.listAll().then((res) => {
+        const fileList = document.getElementById('fileList');
+        fileList.innerHTML = ''; // Clear the list first
+        res.items.forEach((itemRef) => {
+          itemRef.getDownloadURL().then((url) => {
+            const li = document.createElement('li');
+            const a = document.createElement('a');
+            a.href = url;
+            a.textContent = itemRef.name;
+            a.target = '_blank';
+
+            const deleteBtn = document.createElement('button');
+            deleteBtn.textContent = 'Delete';
+            deleteBtn.style.marginLeft = '10px';
+            deleteBtn.onclick = () => deleteFile(itemRef, userId);
+
+            li.appendChild(a);
+            li.appendChild(deleteBtn);
+            fileList.appendChild(li);
+          });
+        });
+      }).catch((error) => {
+        console.error('Error listing files:', error);
+      });
+    }
+
+    // Delete a file
+    function deleteFile(itemRef, userId) {
+      itemRef.delete().then(() => {
+        console.log(`${itemRef.name} deleted successfully`);
+        alert(`${itemRef.name} deleted.`);
+        listUserFiles(userId);  // Refresh file list after deletion
+      }).catch((error) => {
+        console.error('Error deleting file:', error);
+      });
+    }
+  </script>
+</body>
+</html>
