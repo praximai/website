@@ -1,0 +1,60 @@
+<style>
+    .footer a[href*="github.com"] {
+        display: none;
+    }
+</style><!DOCTYPE html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo Page</title>
+</head>
+<body>
+    <header>
+        <div class="container">
+            <nav class="navigation">
+                <a href="#" onclick="logIn()">Log In</a>
+            </nav>
+        </div>
+    </header>
+    <main id="main-content">
+        <div id="demo">
+            <h1>testing testing!</h1>
+        </div>
+    </main>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDiUb9mgm7p70bTJQmPLkIXejk_hFJi1ng",
+            authDomain: "infora-432205.firebaseapp.com",
+            projectId: "infora-432205",
+            storageBucket: "infora-432205.appspot.com",
+            messagingSenderId: "208148894229",
+            appId: "1:208148894229:web:c5d09ce97c3d3568c8f41c",
+            measurementId: "G-L6GHQPKHTR"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+
+        window.logIn = function() {
+            const provider = new GoogleAuthProvider();
+            signInWithPopup(auth, provider)
+                .then((result) => {
+                    window.location.href = ".";
+                })
+                .catch((error) => {
+                    // Handle Errors here.
+                    const errorCode = error.code;
+                    const errorMessage = error.message;
+                    alert(errorMessage);
+                });
+        };
+
+    </script>
+</body>
+</html>
