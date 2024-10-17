@@ -49,8 +49,7 @@
             const provider = new GoogleAuthProvider();
             signInWithPopup(auth, provider)
                 .then((result) => {
-                    // window.location.href = ".";
-                    document.getElementById("demo").innerHTML = "<h1>login complete!</h1>";
+                    window.location.href = ".";
                 })
                 .catch((error) => {
                     // Handle Errors here.
