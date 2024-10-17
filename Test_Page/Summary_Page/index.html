@@ -42,7 +42,6 @@
         async function uploadPDF() {
             const fileInput = document.getElementById('fileUpload');
             const file = fileInput.files[0];
-            const auth = getAuth();
 
             if (file) {
                 const storageRef = ref(storage, 'documents/' + file.name);
@@ -108,7 +107,8 @@
                             const storageRef = ref(storage, 'documents/' + fileData.name);
                             await deleteObject(storageRef);
                             // Delete from Firestore
-                            await deleteDoc(doc(fileCollection, doc.id));
+                            const docRef = doc(fileCollection, doc.id);
+                            await deleteDoc(docRef);
                             // Remove the list item from the DOM
                             fileList.removeChild(li);
                             console.log('File and metadata deleted successfully.');
