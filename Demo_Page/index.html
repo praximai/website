@@ -20,23 +20,24 @@
     </header>
     <main id="main-content">
         <div id="demo">
-            <h1>testing testing!</h1>
+            <h1>testing demo!</h1>
         </div>
     </main>
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+        import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+      
         const firebaseConfig = {
-            apiKey: "AIzaSyDiUb9mgm7p70bTJQmPLkIXejk_hFJi1ng",
-            authDomain: "infora-432205.firebaseapp.com",
-            projectId: "infora-432205",
-            storageBucket: "infora-432205.appspot.com",
-            messagingSenderId: "208148894229",
-            appId: "1:208148894229:web:c5d09ce97c3d3568c8f41c",
-            measurementId: "G-L6GHQPKHTR"
+          apiKey: "AIzaSyBZvsBcAoIJLbQc4yINQz78oyCovB4RDTA",
+          authDomain: "praximai-438817.firebaseapp.com",
+          projectId: "praximai-438817",
+          storageBucket: "praximai-438817.appspot.com",
+          messagingSenderId: "274586621759",
+          appId: "1:274586621759:web:b9f20b3da3329327eba58a",
+          measurementId: "G-EQ7HTDC8T3"
         };
-
+      
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -46,6 +47,7 @@
             signInWithPopup(auth, provider)
                 .then((result) => {
                     window.location.href = ".";
+                    document.getElementById("demo").innerHTML = "<h1>login complete!</h1>";
                 })
                 .catch((error) => {
                     // Handle Errors here.
@@ -54,7 +56,6 @@
                     alert(errorMessage);
                 });
         };
-
     </script>
 </body>
 </html>
