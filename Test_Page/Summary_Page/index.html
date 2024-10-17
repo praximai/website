@@ -39,44 +39,66 @@
         const fileCollection = collection(db, 'pdfFiles');
 
         // Function to upload a PDF
-        window.uploadPDF = async function () {
+        async function uploadPDF() {
             const fileInput = document.getElementById('fileUpload');
             const file = fileInput.files[0];
+            const auth = getAuth();
+
             if (file) {
                 const storageRef = ref(storage, 'documents/' + file.name);
                 try {
+                    const user = auth.currentUser;
+                    if (!user) {
+                        alert('You must be logged in to upload files.');
+                        return;
+                    }
                     await uploadBytes(storageRef, file);
                     const url = await getDownloadURL(storageRef);
-                    await addDoc(fileCollection, { name: file.name, url });
+
+                    await addDoc(fileCollection, {
+                        name: file.name,
+                        url: url,
+                        uid: user.uid // Save the user UID with the file metadata
+                    });
 
                     console.log('Uploaded and added to Firestore:', file.name);
-                    listDocuments();  // Refresh the list after uploading
+                    listDocuments();  // Refresh the file list after uploading
                 } catch (error) {
                     console.error('Upload failed:', error);
                 }
             }
-        };
+        }
 
         // Function to list uploaded documents
+        import { query, where } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+
         async function listDocuments() {
             const fileList = document.getElementById('fileList');
             fileList.innerHTML = '';
-            
+            const auth = getAuth();
+            const user = auth.currentUser;
+
+            if (!user) {
+                console.log('No user signed in.');
+                return;
+            }
+
             try {
-                const querySnapshot = await getDocs(fileCollection);
+                // Create a query against the collection
+                const q = query(fileCollection, where("uid", "==", user.uid));
+                const querySnapshot = await getDocs(q);
+
                 querySnapshot.forEach((doc) => {
                     const fileData = doc.data();
 
                     // Create a list item
                     const li = document.createElement('li');
-                    
                     // Create a link to the PDF
                     const link = document.createElement('a');
                     link.textContent = fileData.name;
                     link.href = fileData.url;
                     link.target = '_blank'; // Open the PDF in a new tab
                     link.rel = 'noopener noreferrer'; // Security best practices
-
                     // Create a delete button for each document
                     const deleteButton = document.createElement('button');
                     deleteButton.textContent = 'Delete';
@@ -85,20 +107,16 @@
                             // Delete from storage
                             const storageRef = ref(storage, 'documents/' + fileData.name);
                             await deleteObject(storageRef);
-
                             // Delete from Firestore
-                            await deleteDoc(doc(db, 'pdfFiles', doc.id));
-
+                            await deleteDoc(doc(fileCollection, doc.id));
                             // Remove the list item from the DOM
                             fileList.removeChild(li);
-                            
                             console.log('File and metadata deleted successfully.');
                         } catch (error) {
                             console.error('Error deleting document/file:', error);
                             alert('Error deleting the file. Please try again.');
                         }
                     };
-
                     // Append the link and delete button to the list item
                     li.appendChild(link);
                     li.appendChild(deleteButton);
