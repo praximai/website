@@ -42,6 +42,15 @@ body {
     flex-shrink: 0;
   }
   
+  #sidebar {
+    width: 150px;
+    background-color: #e0e0e0;
+    padding: 5px;
+    box-sizing: border-box;
+    overflow-y: auto;
+    flex-basis: 75px; /* Prevent shrinking to 0 */
+    flex-shrink: 0;
+  }
   #left-div, #right-div {
     flex: 1;
     display: flex;
@@ -57,16 +66,7 @@ body {
   #right-div {
     background-color: #a8f08c;
   }
-  
-  #sidebar {
-    width: 150px;
-    background-color: #e0e0e0;
-    padding: 5px;
-    box-sizing: border-box;
-    overflow-y: auto;
-    flex-basis: 75px; /* Prevent shrinking to 0 */
-    flex-shrink: 0;
-  }
+
   
   #upload-button {
     width: 100%;

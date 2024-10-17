@@ -23,12 +23,12 @@
         </div>
     </header>
     <main id="main-content">
+        <div id="sidebar">
+            <button id="upload-button">Upload Document</button>
+            <ul id="document-list"></ul>
+        </div>
         <div id="left-div">
             <h1>Original Documents</h1>
-            <div id="sidebar">
-                <button id="upload-button">Upload Document</button>
-                <ul id="document-list"></ul>
-            </div>
             <p>"placeholder for original documents"</p>
         </div>
         <div id="right-div">
@@ -72,82 +72,6 @@
                 console.error("Error during logout", error);
             });
         };
-
-        async function uploadDocument(event) {
-            event.preventDefault();
-            const fileInput = document.createElement('input');
-            fileInput.type = 'file';
-            fileInput.accept = 'application/pdf, application/msword, text/plain';
-            fileInput.onchange = async (e) => {
-                const file = e.target.files[0];
-                if (file) {
-                    try {
-                        const auth = getAuth();
-                        const user = auth.currentUser;
-
-                        if (!user) {
-                        console.error("No user is logged in!");
-                        return;
-                        }
-
-                        const storageRef = ref(storage, `documents/${user.uid}/${file.name}`);
-                        const uploadTask = uploadBytesResumable(storageRef, file);
-
-                        uploadTask.on('state_changed',
-                        (snapshot) => {
-                        },
-                        (error) => {
-                            console.error("Error during file upload:", error);
-                        },
-                        async () => {
-                            const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-                            await addDoc(collection(db, "documents"), {
-                            userId: user.uid,
-                            name: file.name,
-                            url: downloadURL,
-                            created: Date.now()
-                            });
-                        }
-                        );
-                    } catch (error) {
-                        console.error("Error uploading document:", error);
-                    }
-                }
-            };
-            fileInput.click();
-        }
-
-        function loadDocuments() {
-            const auth = getAuth();
-            const user = auth.currentUser;
-
-            if (!user) {
-                console.error("No user is logged in!");
-                return;
-            }
-            const documentList = document.getElementById('document-list');
-            let unsubscribe = onSnapshot(collection(db, "documents"), (snapshot) => {
-                documentList.innerHTML = '';
-                snapshot.forEach((doc) => {
-                    if (doc.data().userId === user.uid) {
-                        const li = document.createElement('li');
-                        li.textContent = doc.data().name;
-                        li.onclick = () => {
-                            window.open(doc.data().url, '_blank');
-                        };
-                        documentList.appendChild(li);
-                    }
-                });
-            }, (error) => {
-                console.error("Error loading documents:", error);
-            });
-            return unsubscribe;
-        }
-        window.addEventListener('DOMContentLoaded', () => {
-            loadDocuments();
-        });
-
-        document.getElementById('upload-button').addEventListener('click', uploadDocument);
     </script>
 </body>
 </html>
