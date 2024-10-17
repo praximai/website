@@ -40,7 +40,8 @@
         // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-        import { getFirestore, collection, getDocs, addDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+        import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js";
+        import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
       
         const firebaseConfig = {
           apiKey: "AIzaSyBZvsBcAoIJLbQc4yINQz78oyCovB4RDTA",
@@ -55,6 +56,7 @@
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
+        const storage = getStorage(app);
         const db = getFirestore(app);
 
         onAuthStateChanged(auth, async (user) => {
@@ -70,7 +72,7 @@
                 console.error("Error during logout", error);
             });
         };
-        
+
         async function uploadDocument(event) {
             event.preventDefault();
 
@@ -79,14 +81,26 @@
             fileInput.accept = 'application/pdf, application/msword, text/plain';
             fileInput.onchange = async (e) => {
                 const file = e.target.files[0];
-
                 if (file) {
                     try {
-                        await addDoc(collection(db, "documents"), {
-                            name: file.name,
-                        });
+                        const storageRef = ref(storage, `documents/${file.name}`);
+                        const uploadTask = uploadBytesResumable(storageRef, file);
 
-                        loadDocuments();
+                        uploadTask.on('state_changed', 
+                            (snapshot) => {
+                            }, 
+                            (error) => {
+                                console.error("Error during file upload:", error);
+                            }, 
+                            async () => {
+                                const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                                await addDoc(collection(db, "documents"), {
+                                    name: file.name,
+                                    url: downloadURL,
+                                    created: Date.now()
+                                });
+                            }
+                        );
                     } catch (error) {
                         console.error("Error uploading document:", error);
                     }
@@ -96,28 +110,27 @@
             fileInput.click();
         }
 
-        async function loadDocuments() {
+        function loadDocuments() {
             const documentList = document.getElementById('document-list');
-            documentList.innerHTML = '';
-
-            try {
-                const querySnapshot = await getDocs(collection(db, "documents"));
-                querySnapshot.forEach((doc) => {
+            onSnapshot(collection(db, "documents"), (snapshot) => {
+                documentList.innerHTML = ''; // Clear the list before repopulating
+                snapshot.forEach((doc) => {
                     const li = document.createElement('li');
                     li.textContent = doc.data().name;
                     li.onclick = () => {
-                        // Logic to display or download the document when clicked
+                        // Open the document URL in a new tab
+                        window.open(doc.data().url, '_blank');
                     };
                     documentList.appendChild(li);
                 });
-            } catch (error) {
+            }, (error) => {
                 console.error("Error loading documents:", error);
-            }
+            });
         }
 
-        document.getElementById('upload-button').addEventListener('click', uploadDocument);  
-        
         loadDocuments();
+
+        document.getElementById('upload-button').addEventListener('click', uploadDocument);
     </script>
 </body>
 </html>

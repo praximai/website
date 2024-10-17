@@ -39,6 +39,13 @@
 
 const db = getFirestore(app);
 
+import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js";
+import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+
+const storage = getStorage(app);
+const db = getFirestore(app);
+
+// Function to upload a document
 async function uploadDocument(event) {
     event.preventDefault();
 
@@ -47,14 +54,32 @@ async function uploadDocument(event) {
     fileInput.accept = 'application/pdf, application/msword, text/plain';
     fileInput.onchange = async (e) => {
         const file = e.target.files[0];
-
         if (file) {
             try {
-                await addDoc(collection(db, "documents"), {
-                    name: file.name,
-                });
+                // Create a storage reference
+                const storageRef = ref(storage, `documents/${file.name}`);
+                // Upload file
+                const uploadTask = uploadBytesResumable(storageRef, file);
 
-                loadDocuments();
+                // Listen for upload completion to get the download URL
+                uploadTask.on('state_changed', 
+                    (snapshot) => {
+                        // Optional: You can add progress feedback here
+                    }, 
+                    (error) => {
+                        console.error("Error during file upload:", error);
+                    }, 
+                    async () => {
+                        // Upload finished successfully, now get the download URL
+                        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+                        // Store file metadata and URL in Firestore
+                        await addDoc(collection(db, "documents"), {
+                            name: file.name,
+                            url: downloadURL,
+                            created: Date.now()
+                        });
+                    }
+                );
             } catch (error) {
                 console.error("Error uploading document:", error);
             }
@@ -64,30 +89,34 @@ async function uploadDocument(event) {
     fileInput.click();
 }
 
-// Function to load documents from Firestore and display them
-async function loadDocuments() {
+// Set up a real-time listener to load documents
+function loadDocuments() {
     const documentList = document.getElementById('document-list');
-    documentList.innerHTML = '';
-
-    try {
-        const querySnapshot = await getDocs(collection(db, "documents"));
-        querySnapshot.forEach((doc) => {
+    onSnapshot(collection(db, "documents"), (snapshot) => {
+        documentList.innerHTML = ''; // Clear the list before repopulating
+        snapshot.forEach((doc) => {
             const li = document.createElement('li');
             li.textContent = doc.data().name;
             li.onclick = () => {
-                // Logic to display or download the document when clicked
+                // Open the document URL in a new tab
+                window.open(doc.data().url, '_blank');
             };
             documentList.appendChild(li);
         });
-    } catch (error) {
+    }, (error) => {
         console.error("Error loading documents:", error);
-    }
+    });
 }
+
+// Initialize real-time document loading
+loadDocuments();
 
 document.getElementById('upload-button').addEventListener('click', uploadDocument);
 
-// Call loadDocuments on page load to display existing documents
-loadDocuments();
+
+
+
+
     </script>
 </body>
 </html>
