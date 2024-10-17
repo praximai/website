@@ -120,9 +120,9 @@
                 console.error("Error fetching documents: ", error);
             }
         }
-        
+
         document.getElementById('upload-button').addEventListener('click', () => {
-            const user = firebase.auth().currentUser;
+            const user = auth.currentUser;
             if (user) {
                 uploadFile(user.uid);
             } else {
