@@ -41,7 +41,7 @@ body {
     height: calc(100vh - 10);
     flex-shrink: 0;
   }
-  
+
   #sidebar {
     width: 150px;
     background-color: #e0e0e0;
@@ -66,9 +66,19 @@ body {
   #right-div {
     background-color: #a8f08c;
   }
-
   
   #upload-button {
+    width: 100%;
+    padding: 5px;
+    margin-bottom: 5px;
+    cursor: pointer;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 8px;
+  }
+  #generate-button {
     width: 100%;
     padding: 5px;
     margin-bottom: 5px;
@@ -86,6 +96,22 @@ body {
   }
   
   #document-list li {
+    margin: 2px 0;
+    padding: 4px;
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-radius: 2px;
+    cursor: pointer;
+    font-family: 'Arial', sans-serif;
+    font-size: 7px;
+  }
+
+  #generate-list {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  #generate-list li {
     margin: 2px 0;
     padding: 4px;
     background-color: #fff;
