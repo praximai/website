@@ -61,28 +61,38 @@
         async function listDocuments() {
             const fileList = document.getElementById('fileList');
             fileList.innerHTML = '';
-
+            
             try {
                 const querySnapshot = await getDocs(fileCollection);
                 querySnapshot.forEach((doc) => {
                     const fileData = doc.data();
+
+                    // Create a list item
                     const li = document.createElement('li');
-                    li.textContent = fileData.name;
+                    
+                    // Create a link to the PDF
+                    const link = document.createElement('a');
+                    link.textContent = fileData.name;
+                    link.href = fileData.url;
+                    link.target = '_blank'; // Open the PDF in a new tab
+                    link.rel = 'noopener noreferrer'; // Security best practices
 
                     // Create a delete button for each document
                     const deleteButton = document.createElement('button');
                     deleteButton.textContent = 'Delete';
-                    deleteButton.onclick = async function() {
+                    deleteButton.onclick = async function () {
                         // Delete from storage
                         const storageRef = ref(storage, 'documents/' + fileData.name);
                         await deleteObject(storageRef);
 
                         // Delete from Firestore
-                        await deleteDoc(doc(db, 'pdfFiles', doc.id));
+                        await deleteDoc(doc(fileCollection, doc.id));
 
-                        listDocuments();  // Refresh the list after deletion
+                        listDocuments(); // Refresh the list after deletion
                     };
-                    
+
+                    // Append the link and delete button to the list item
+                    li.appendChild(link);
                     li.appendChild(deleteButton);
                     fileList.appendChild(li);
                 });
@@ -90,15 +100,6 @@
                 console.error('Error listing documents:', error);
             }
         }
-
-        // Function to log out
-        window.logOut = function () {
-            signOut(auth).then(() => {
-                console.log('User signed out.');
-            }).catch((error) => {
-                console.error('Sign out failed:', error);
-            });
-        };
 
         // Load the documents list when the page loads
         document.addEventListener('DOMContentLoaded', listDocuments);
