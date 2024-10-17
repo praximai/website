@@ -6,12 +6,15 @@ html, body {
 
 body {
     background-color: #6ae7e7;
+    display: flex;
+    flex-direction: column;
 }
 
 header {
     background: #0a15df;
     padding: 10px 20px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    flex-shrink: 0;
 }
 
 .container {
@@ -36,7 +39,8 @@ header {
 
 main {
     display: flex;
-    height: calc(100% - 50px); /* Adjust height to fill below the header. Header height is 50px */
+    flex: 1; /* Take up remaining space */
+    overflow: hidden;
 }
 
 #left-div, #right-div {
