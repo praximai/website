@@ -1,7 +1,11 @@
-body {
-    background-color: #6ae7e7;
+html, body {
+    height: 100%;
     margin: 0;
     font-family: 'Times New Roman', Times, serif;
+}
+
+body {
+    background-color: #6ae7e7;
 }
 
 header {
@@ -32,7 +36,7 @@ header {
 
 main {
     display: flex;
-    height: 80vh;
+    height: calc(100% - 50px); /* Adjust height to fill below the header. Header height is 50px */
 }
 
 #left-div, #right-div {
