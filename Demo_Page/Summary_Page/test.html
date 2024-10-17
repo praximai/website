@@ -5,48 +5,13 @@
 </style><!DOCTYPE html>
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <link rel="stylesheet" href="styles.css">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Summarization Page</title>
-</head>
 <body>
-    <header>
-        <div class="container">
-            <div class="logo">
-                <a href="#">Praxim.ai</a>
-            </div>
-            <nav class="navigation">
-                <a href="#" onclick="logOut()">Log Out</a>
-            </nav>
-        </div>
-    </header>
-    <main id="main-content">
-        <div id="sidebar">
-            <button id="upload-button">Upload Document</button>
-            <ul id="document-list"></ul>
-        </div>
-        <div id="left-div">
-            <h1>Original Documents</h1>
-            <p>"placeholder for original documents"</p>
-        </div>
-        <div id="sidebar">
-            <button id="generate-button">Generated Document</button>
-            <ul id="generate-list"></ul>
-        </div>        
-        <div id="right-div">
-          <h1>Generated Summarization</h1>
-          <p>"placeholder for generated summarization"</p>
-        </div>
-    </main>
-    <script type="module">
-        // Import the functions you need from the SDKs you need
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-        import { getFirestore, collection, doc, getDocs, query, addDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js";
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js"></script>
 
+    <script>
 
         const firebaseConfig = {
           apiKey: "AIzaSyBZvsBcAoIJLbQc4yINQz78oyCovB4RDTA",
@@ -57,7 +22,14 @@
           appId: "1:274586621759:web:b9f20b3da3329327eba58a",
           measurementId: "G-EQ7HTDC8T3"
         };
-      
+        firebase.initializeApp(firebaseConfig);
+    </script>
+    
+    <input type="file" id="fileInput" accept="application/pdf">
+    <button id="uploadButton" onclick="document.getElementById('fileInput').click();">Choose PDF</button>
+    <button onclick="uploadPDF()">Upload PDF</button>
+
+    <script>
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
@@ -77,58 +49,45 @@
                 console.error("Error during logout", error);
             });
         };
-
-        async function uploadFile(userId) {
-            const fileInput = document.getElementById('fileInput');
-            const file = fileInput ? fileInput.files[0] : null;
-            if (file) {
-                const storageRef = ref(storage, `documents/${userId}/${file.name}`);
-                try {
-                    await uploadBytes(storageRef, file);
-                    const downloadURL = await getDownloadURL(storageRef);
-                    await addDoc(collection(db, `users/${userId}/documents`), {
-                        name: file.name,
-                        url: downloadURL,
-                        uploadedAt: new Date()
-                    });
-                    loadUserDocuments(userId);
-                } catch (error) {
-                    console.error("Error uploading document: ", error);
-                }
-            } else {
-                alert("Please select a file to upload.");
-            }
-        }
-
-        async function loadUserDocuments(userId) {
-            const documentList = document.getElementById('document-list');
-            documentList.innerHTML = ''; // Clear current list
-
-            try {
-                const docsSnap = await getDocs(query(collection(db, `users/${userId}/documents`)));
-                docsSnap.forEach(doc => {
-                    const li = document.createElement('li');
-                    const data = doc.data();
-
-                    li.textContent = data.name;
-                    li.addEventListener('click', () => {
-                        window.open(data.url, '_blank'); // Open document in a new tab
-                    });
-
-                    documentList.appendChild(li);
-                });
-            } catch (error) {
-                console.error("Error fetching documents: ", error);
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            // Example: call uploadFile when a button is clicked
-            document.getElementById('upload-button').addEventListener('click', () => {
-                const userId = 'exampleUserId'; // replace with the actual user ID
-                uploadFile(userId);
-            });
+    </script>
+    <script>
+        let selectedFile = null;
+    
+        document.getElementById('fileInput').addEventListener('change', (event) => {
+          selectedFile = event.target.files[0];
+          if (selectedFile) {
+            document.getElementById('uploadButton').innerText = 'PDF Selected';
+          }
         });
+    
+        async function uploadPDF() {
+          if (!selectedFile) {
+            alert("Please choose a file first.");
+            return;
+          }
+    
+          try {
+            const user = firebase.auth().currentUser;
+            if (!user) {
+              throw new Error("User is not authenticated.");
+            }
+            
+            const userId = user.uid;
+            const storageRef = firebase.storage().ref(`pdfs/${userId}/${selectedFile.name}`);
+            await storageRef.put(selectedFile);
+    
+            // Optional: Store metadata in Firestore
+            const db = firebase.firestore();
+            await db.collection('pdfs').doc(userId).set({
+              [selectedFile.name]: storageRef.fullPath
+            }, { merge: true });
+    
+            alert("File uploaded successfully.");
+          } catch (error) {
+            console.error("Error uploading file:", error);
+            alert("Failed to upload file.");
+          }
+        }
     </script>
 </body>
 </html>
