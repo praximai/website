@@ -1,19 +1,9 @@
-<style>
-    .footer a[href*="github.com"] {
-        display: none;
-    }
-</style>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PDF Upload</title>
-  <!-- Add Firebase scripts -->
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Firebase PDF Upload with Modules</title>
 </head>
 <body>
     <input type="file" id="fileUpload" accept=".pdf" style="display:none;" onchange="uploadPDF()">
@@ -22,9 +12,14 @@
     <h2>Uploaded Documents</h2>
     <ul id="fileList"></ul>
 
-  <script>
-    // Firebase configuration
-    document.addEventListener('DOMContentLoaded', function () {
+    <script type="module">
+        // Import necessary Firebase functions
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+        import { getAuth, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+        import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js';
+
+        // Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyBZvsBcAoIJLbQc4yINQz78oyCovB4RDTA",
             authDomain: "praximai-438817.firebaseapp.com",
@@ -34,95 +29,79 @@
             appId: "1:274586621759:web:b9f20b3da3329327eba58a",
             measurementId: "G-EQ7HTDC8T3"
         };
-        
+
         // Initialize Firebase
-        const app = firebase.initializeApp(firebaseConfig);
-        const auth = firebase.auth();
-        const db = firebase.firestore();
-        const storage = firebase.storage();
-    });
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
 
-    // Handle authentication
-    firebase.auth().onAuthStateChanged((user) => {
-      if (!user) {
-        window.location.href = "../"; // Redirect to homepage or login page if not authenticated
-      }
-    });
+        const fileCollection = collection(db, 'pdfFiles');
 
-    // Logout function
-    window.logOut = function() {
-      firebase.auth().signOut().then(() => {
-        window.location.href = "../"; // Redirect to homepage or login page after logout
-      }).catch((error) => {
-        console.error("Error during logout", error);
-      });
-    };
+        // Function to upload a PDF
+        window.uploadPDF = async function () {
+            const fileInput = document.getElementById('fileUpload');
+            const file = fileInput.files[0];
+            if (file) {
+                const storageRef = ref(storage, 'documents/' + file.name);
+                try {
+                    await uploadBytes(storageRef, file);
+                    const url = await getDownloadURL(storageRef);
+                    await addDoc(fileCollection, { name: file.name, url });
 
-    // PDF upload function
-    function uploadPDF() {
-      const fileInput = document.getElementById('fileUpload');
-      const file = fileInput.files[0];
+                    console.log('Uploaded and added to Firestore:', file.name);
+                    listDocuments();  // Refresh the list after uploading
+                } catch (error) {
+                    console.error('Upload failed:', error);
+                }
+            }
+        };
 
-      if (!file) {
-        alert("No file selected!");
-        return;
-      }
+        // Function to list uploaded documents
+        async function listDocuments() {
+            const fileList = document.getElementById('fileList');
+            fileList.innerHTML = '';
 
-      const user = firebase.auth().currentUser;
-      if (user) {
-        const userId = user.uid;
-        const storageRef = storage.ref(`${userId}/${file.name}`);
+            try {
+                const querySnapshot = await getDocs(fileCollection);
+                querySnapshot.forEach((doc) => {
+                    const fileData = doc.data();
+                    const li = document.createElement('li');
+                    li.textContent = fileData.name;
 
-        // Upload the file
-        storageRef.put(file).then(snapshot => {
-          console.log('Uploaded a PDF file!');
-          alert('PDF uploaded successfully!');
-          listUserFiles(userId);
-        }).catch(error => {
-          console.error('Upload failed:', error);
-        });
-      } else {
-        alert("User is not authenticated!");
-      }
-    }
-    function listUserFiles(userId) {
-      const storageRef = storage.ref(userId);
-      storageRef.listAll().then((res) => {
-        const fileList = document.getElementById('fileList');
-        fileList.innerHTML = ''; // Clear the list first
-        res.items.forEach((itemRef) => {
-          itemRef.getDownloadURL().then((url) => {
-            const li = document.createElement('li');
-            const a = document.createElement('a');
-            a.href = url;
-            a.textContent = itemRef.name;
-            a.target = '_blank';
+                    // Create a delete button for each document
+                    const deleteButton = document.createElement('button');
+                    deleteButton.textContent = 'Delete';
+                    deleteButton.onclick = async function() {
+                        // Delete from storage
+                        const storageRef = ref(storage, 'documents/' + fileData.name);
+                        await deleteObject(storageRef);
 
-            const deleteBtn = document.createElement('button');
-            deleteBtn.textContent = 'Delete';
-            deleteBtn.style.marginLeft = '10px';
-            deleteBtn.onclick = () => deleteFile(itemRef, userId);
+                        // Delete from Firestore
+                        await deleteDoc(doc(db, 'pdfFiles', doc.id));
 
-            li.appendChild(a);
-            li.appendChild(deleteBtn);
-            fileList.appendChild(li);
-          });
-        });
-      }).catch((error) => {
-        console.error('Error listing files:', error);
-      });
-    }
+                        listDocuments();  // Refresh the list after deletion
+                    };
+                    
+                    li.appendChild(deleteButton);
+                    fileList.appendChild(li);
+                });
+            } catch (error) {
+                console.error('Error listing documents:', error);
+            }
+        }
 
-    // Delete a file
-    function deleteFile(itemRef, userId) {
-      itemRef.delete().then(() => {
-        console.log(`${itemRef.name} deleted successfully`);
-        alert(`${itemRef.name} deleted.`);
-        listUserFiles(userId);  // Refresh file list after deletion
-      }).catch((error) => {
-        console.error('Error deleting file:', error);
-      });
-    }
-  </script>
+        // Function to log out
+        window.logOut = function () {
+            signOut(auth).then(() => {
+                console.log('User signed out.');
+            }).catch((error) => {
+                console.error('Sign out failed:', error);
+            });
+        };
+
+        // Load the documents list when the page loads
+        document.addEventListener('DOMContentLoaded', listDocuments);
+    </script>
 </body>
 </html>
