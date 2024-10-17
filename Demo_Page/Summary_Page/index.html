@@ -1,134 +1,176 @@
-<style>
-    .footer a[href*="github.com"] {
-        display: none;
-    }
-</style><!DOCTYPE html>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <link rel="stylesheet" href="styles.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Summarization Page</title>
+    <title>Overleaf-Like Interface</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .left-panel, .right-panel {
+            padding: 10px;
+            overflow-y: auto;
+            height: 100%;
+        }
+
+        .left-panel {
+            width: 25%;
+            background-color: #f1f1f1;
+        }
+
+        .center-bar {
+            width: 5px;
+            background-color: #ccc;
+            cursor: col-resize;
+            position: relative;
+        }
+
+        .right-panel {
+            width: 75%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .top-bar {
+            height: 40px;
+            background-color: #333;
+            color: white;
+            display: flex;
+            align-items: center;
+            padding: 0 10px;
+        }
+
+        .top-bar button {
+            margin-left: 10px;
+            background-color: #555;
+            border: none;
+            padding: 5px 10px;
+            color: white;
+            cursor: pointer;
+        }
+
+        .top-bar button:hover {
+            background-color: #777;
+        }
+
+        .content-area {
+            flex: 1;
+            background-color: white;
+            padding: 10px;
+        }
+
+        .chat-box {
+            height: 100px;
+            background-color: #f9f9f9;
+            display: flex;
+            flex-direction: column;
+            border-top: 1px solid #ddd;
+        }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 10px;
+        }
+
+        .chat-input {
+            display: flex;
+            border-top: 1px solid #ddd;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 10px;
+            border: none;
+        }
+
+        .chat-input button {
+            padding: 10px;
+            border: none;
+            background-color: #333;
+            color: white;
+            cursor: pointer;
+        }
+
+        .chat-input button:hover {
+            background-color: #555;
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <div class="container">
-            <div class="logo">
-                <a href="#">Praxim.ai</a>
+    <div class="left-panel">
+        <h3>Menu</h3>
+        <button>File</button>
+        <button>Edit</button>
+        <button>View</button>
+        <button>Project</button>
+    </div>
+
+    <div class="center-bar" id="center-bar"></div>
+
+    <div class="right-panel">
+        <div class="top-bar">
+            <button>Compile</button>
+            <button>History</button>
+            <button>Layout</button>
+        </div>
+
+        <div class="content-area">
+            <h2>Preview</h2>
+            <p>Your LaTeX content will be displayed here.</p>
+        </div>
+
+        <div class="chat-box">
+            <div class="chat-messages" id="chat-messages">
+                <p><strong>User:</strong> Hello!</p>
             </div>
-            <nav class="navigation">
-                <a href="#" onclick="logOut()">Log Out</a>
-            </nav>
+            <div class="chat-input">
+                <input type="text" id="chat-input" placeholder="Send a message...">
+                <button onclick="sendMessage()">Send</button>
+            </div>
         </div>
-    </header>
-    <main id="main-content">
-        <div id="sidebar">
-            <button id="upload-button">Upload Document</button>
-            <ul id="document-list"></ul>
-        </div>
-        <div id="left-div">
-            <h1>Original Documents</h1>
-            <p>"placeholder for original documents"</p>
-        </div>
-        <div id="sidebar">
-            <button id="generate-button">Generated Document</button>
-            <ul id="generate-list"></ul>
-        </div>        
-        <div id="right-div">
-          <h1>Generated Summarization</h1>
-          <p>"placeholder for generated summarization"</p>
-        </div>
-    </main>
-    <script type="module">
-        // Import the functions you need from the SDKs you need
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-        import { getFirestore, collection, doc, getDocs, query, addDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
-        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js";
+    </div>
 
+    <script>
+        const centerBar = document.getElementById('center-bar');
+        let isDragging = false;
 
-        const firebaseConfig = {
-          apiKey: "AIzaSyBZvsBcAoIJLbQc4yINQz78oyCovB4RDTA",
-          authDomain: "praximai-438817.firebaseapp.com",
-          projectId: "praximai-438817",
-          storageBucket: "praximai-438817.appspot.com",
-          messagingSenderId: "274586621759",
-          appId: "1:274586621759:web:b9f20b3da3329327eba58a",
-          measurementId: "G-EQ7HTDC8T3"
-        };
-      
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const storage = getStorage(app);
-
-        onAuthStateChanged(auth, async (user) => {
-            if (!user) {
-                window.location.href = "../";
-            }
+        centerBar.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            document.body.style.cursor = 'col-resize';
         });
 
-        window.logOut = function() {
-            signOut(auth).then(() => {
-                window.location.href = "../";
-            }).catch((error) => {
-                console.error("Error during logout", error);
-            });
-        };
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
 
-        async function uploadFile(userId) {
-            const fileInput = document.getElementById('fileInput');
-            const file = fileInput ? fileInput.files[0] : null;
-            if (file) {
-                const storageRef = ref(storage, `documents/${userId}/${file.name}`);
-                try {
-                    await uploadBytes(storageRef, file);
-                    const downloadURL = await getDownloadURL(storageRef);
-                    await addDoc(collection(db, `users/${userId}/documents`), {
-                        name: file.name,
-                        url: downloadURL,
-                        uploadedAt: new Date()
-                    });
-                    loadUserDocuments(userId);
-                } catch (error) {
-                    console.error("Error uploading document: ", error);
-                }
-            } else {
-                alert("Please select a file to upload.");
-            }
-        }
-
-        async function loadUserDocuments(userId) {
-            const documentList = document.getElementById('document-list');
-            documentList.innerHTML = ''; // Clear current list
-
-            try {
-                const docsSnap = await getDocs(query(collection(db, `users/${userId}/documents`)));
-                docsSnap.forEach(doc => {
-                    const li = document.createElement('li');
-                    const data = doc.data();
-
-                    li.textContent = data.name;
-                    li.addEventListener('click', () => {
-                        window.open(data.url, '_blank'); // Open document in a new tab
-                    });
-
-                    documentList.appendChild(li);
-                });
-            } catch (error) {
-                console.error("Error fetching documents: ", error);
-            }
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-            // Example: call uploadFile when a button is clicked
-            document.getElementById('upload-button').addEventListener('click', () => {
-                const userId = 'exampleUserId'; // replace with the actual user ID
-                uploadFile(userId);
-            });
+            const leftWidth = e.clientX / window.innerWidth * 100;
+            document.querySelector('.left-panel').style.width = `${leftWidth}%`;
+            document.querySelector('.right-panel').style.width = `${100 - leftWidth}%`;
         });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            document.body.style.cursor = 'default';
+        });
+
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            if (message) {
+                const chatMessages = document.getElementById('chat-messages');
+                const newMessage = document.createElement('p');
+                newMessage.innerHTML = `<strong>You:</strong> ${message}`;
+                chatMessages.appendChild(newMessage);
+                input.value = '';
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            }
+        }
     </script>
 </body>
 </html>
