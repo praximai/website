@@ -39,13 +39,13 @@
           <h1>Generated Summarization</h1>
           <p>"placeholder for generated summarization"</p>
         </div>
-      </main>
+    </main>
+    <script src="https://www.gstatic.com/firebasejs/9.x/firebase-storage.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.x/firebase-firestore.js"></script>
     <script type="module">
         // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-        import { getStorage, ref, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js";
-        import { getFirestore, collection, addDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
       
         const firebaseConfig = {
           apiKey: "AIzaSyBZvsBcAoIJLbQc4yINQz78oyCovB4RDTA",
@@ -60,8 +60,9 @@
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        const storage = getStorage(app);
-        const db = getFirestore(app);
+        firebase.initializeApp(firebaseConfig);
+        const storage = firebase.storage();
+        const db = firebase.firestore();
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
