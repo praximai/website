@@ -118,24 +118,34 @@
         }
 
         function loadDocuments() {
+            const auth = getAuth();
+            const user = auth.currentUser;
+
+            if (!user) {
+                console.error("No user is logged in!");
+                return;
+            }
             const documentList = document.getElementById('document-list');
-            
-            onSnapshot(collection(db, "documents"), (snapshot) => {
+            let unsubscribe = onSnapshot(collection(db, "documents"), (snapshot) => {
                 documentList.innerHTML = '';
                 snapshot.forEach((doc) => {
-                    const li = document.createElement('li');
-                    li.textContent = doc.data().name;
-                    li.onclick = () => {
-                        window.open(doc.data().url, '_blank');
-                    };
-                    documentList.appendChild(li);
+                    if (doc.data().userId === user.uid) {
+                        const li = document.createElement('li');
+                        li.textContent = doc.data().name;
+                        li.onclick = () => {
+                            window.open(doc.data().url, '_blank');
+                        };
+                        documentList.appendChild(li);
+                    }
                 });
             }, (error) => {
                 console.error("Error loading documents:", error);
             });
+            return unsubscribe;
         }
-
-        loadDocuments();
+        window.addEventListener('DOMContentLoaded', () => {
+            loadDocuments();
+        });
 
         document.getElementById('upload-button').addEventListener('click', uploadDocument);
     </script>
