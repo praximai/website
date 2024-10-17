@@ -24,21 +24,23 @@
 
   <script>
     // Firebase configuration
-    const firebaseConfig = {
-        apiKey: "AIzaSyBZvsBcAoIJLbQc4yINQz78oyCovB4RDTA",
-        authDomain: "praximai-438817.firebaseapp.com",
-        projectId: "praximai-438817",
-        storageBucket: "praximai-438817.appspot.com",
-        messagingSenderId: "274586621759",
-        appId: "1:274586621759:web:b9f20b3da3329327eba58a",
-        measurementId: "G-EQ7HTDC8T3"
-    };
-
-    // Initialize Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-    const storage = firebase.storage();
+    document.addEventListener('DOMContentLoaded', function () {
+        const firebaseConfig = {
+            apiKey: "AIzaSyBZvsBcAoIJLbQc4yINQz78oyCovB4RDTA",
+            authDomain: "praximai-438817.firebaseapp.com",
+            projectId: "praximai-438817",
+            storageBucket: "praximai-438817.appspot.com",
+            messagingSenderId: "274586621759",
+            appId: "1:274586621759:web:b9f20b3da3329327eba58a",
+            measurementId: "G-EQ7HTDC8T3"
+        };
+        
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+        const storage = firebase.storage();
+    });
 
     // Handle authentication
     firebase.auth().onAuthStateChanged((user) => {
