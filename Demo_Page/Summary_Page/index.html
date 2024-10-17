@@ -40,13 +40,14 @@
           <p>"placeholder for generated summarization"</p>
         </div>
     </main>
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js"></script>
     <script type="module">
         // Import the functions you need from the SDKs you need
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
         import { getAuth, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-      
+        import { getFirestore, collection, doc, getDocs, query, addDoc } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js";
+        import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js";
+
+
         const firebaseConfig = {
           apiKey: "AIzaSyBZvsBcAoIJLbQc4yINQz78oyCovB4RDTA",
           authDomain: "praximai-438817.firebaseapp.com",
@@ -60,9 +61,8 @@
         // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        firebase.initializeApp(firebaseConfig);
-        const storage = firebase.storage();
-        const db = firebase.firestore();
+        const db = getFirestore(app);
+        const storage = getStorage(app);
 
         onAuthStateChanged(auth, async (user) => {
             if (!user) {
@@ -78,54 +78,49 @@
             });
         };
 
-        function uploadFile(userId) {
+        async function uploadFile(userId) {
             const file = document.getElementById('fileInput').files[0];
             if (file) {
-                const storageRef = storage.ref(`documents/${userId}/${file.name}`);
-                storageRef.put(file)
-                    .then(snapshot => snapshot.ref.getDownloadURL())
-                    .then(downloadURL => {
-                        return db.collection('users').doc(userId).collection('documents').add({
-                            name: file.name,
-                            url: downloadURL,
-                            uploadedAt: firebase.firestore.FieldValue.serverTimestamp()
-                        });
-                    })
-                    .then(() => {
-                        loadUserDocuments(userId);
-                    })
-                    .catch(error => {
-                        console.error("Error uploading document: ", error);
+                const storageRef = ref(storage, `documents/${userId}/${file.name}`);
+                try {
+                    await uploadBytes(storageRef, file);
+                    const downloadURL = await getDownloadURL(storageRef);
+                    await addDoc(collection(db, `users/${userId}/documents`), {
+                        name: file.name,
+                        url: downloadURL,
+                        uploadedAt: new Date()
                     });
+                    loadUserDocuments(userId);
+                } catch (error) {
+                    console.error("Error uploading document: ", error);
+                }
             } else {
                 alert("Please select a file to upload.");
             }
         }
-        
-        function loadUserDocuments(userId) {
+
+        async function loadUserDocuments(userId) {
             const documentList = document.getElementById('document-list');
             documentList.innerHTML = ''; // Clear current list
 
-            db.collection('users').doc(userId).collection('documents')
-                .orderBy('uploadedAt', 'desc')
-                .get()
-                .then(querySnapshot => {
-                    querySnapshot.forEach(doc => {
-                        const li = document.createElement('li');
-                        const data = doc.data();
+            try {
+                const docsSnap = await getDocs(query(collection(db, `users/${userId}/documents`)));
+                docsSnap.forEach(doc => {
+                    const li = document.createElement('li');
+                    const data = doc.data();
 
-                        li.textContent = data.name;
-                        li.addEventListener('click', () => {
-                            window.open(data.url, '_blank'); // Open document in a new tab
-                        });
-
-                        documentList.appendChild(li);
+                    li.textContent = data.name;
+                    li.addEventListener('click', () => {
+                        window.open(data.url, '_blank'); // Open document in a new tab
                     });
-                })
-                .catch(error => {
-                    console.error("Error fetching document list: ", error);
+
+                    documentList.appendChild(li);
                 });
+            } catch (error) {
+                console.error("Error fetching documents: ", error);
+            }
         }
+        
         document.getElementById('upload-button').addEventListener('click', () => {
             const user = firebase.auth().currentUser;
             if (user) {
