@@ -347,7 +347,7 @@
 
         const textContainer = document.getElementById('text-container');
 
-        function displayGeneratedText(fileUrl) {
+        function displayGeneratedText(fileName, fileUrl) {
             fetch(fileUrl)
                 .then((response) => {
                     if (!response.ok) {
