@@ -49,6 +49,7 @@ body {
     flex-direction: column;
     padding: 10px;
     overflow-y: auto;
+    width: 50%
     height: 100%; /* Ensure they take up available height */
 }
 
