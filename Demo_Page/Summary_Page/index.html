@@ -37,14 +37,11 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <script>
-        // const pdfUpload = document.getElementById('fileUpload');
-        // const fileMenu = document.getElementById('file-menu');
         const pdfContainer = document.getElementById('pdf-container');
         const chatMessages = document.getElementById('chat-messages');
         const centerBar = document.getElementById('center-bar');
         const leftPanel = document.getElementById('left-panel');
         const rightPanel = document.getElementById('right-panel');
-        const files = new Map();  // Store files with their content
         let isDragging = false;
 
         centerBar.addEventListener('mousedown', () => {
@@ -172,6 +169,7 @@
                 console.error('Error listing documents:', error);
             }
         }
+        document.addEventListener('DOMContentLoaded', listDocuments);
 
         // add to file menu
         function addToFileMenu(fileName, fileUrl) {
@@ -202,7 +200,6 @@
                     console.error('Error displaying PDF:', error);
                 });
         }
-        document.addEventListener('DOMContentLoaded', listDocuments);
 
         function renderPage(pdf, pageNumber, canvas) {
             pdf.getPage(pageNumber).then((page) => {
