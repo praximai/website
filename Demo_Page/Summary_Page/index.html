@@ -118,18 +118,16 @@
         // upload documents
         const pdfUpload = document.getElementById('fileUpload');
         pdfUpload.addEventListener('change', async (event) => {
-            const user = auth.currentUser;
             const file = event.target.files[0];
             if (file && file.type === 'application/pdf') {
                 try {
-                    const modifiedFileName = user.uid + '_' + file.name;
-                    const storageRef = ref(storage, 'documents/' + modifiedFileName);
-
                     const user = auth.currentUser;
                     if (!user) {
                         alert('You must be logged in to upload files.');
                         return;
                     }
+                    const modifiedFileName = user.uid + '_' + file.name;
+                    const storageRef = ref(storage, 'documents/' + modifiedFileName);
                     await uploadBytes(storageRef, file);
                     const url = await getDownloadURL(storageRef);
                     await addDoc(fileCollection, {
