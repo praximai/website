@@ -47,53 +47,6 @@
         const files = new Map();  // Store files with their content
         let isDragging = false;
 
-        // pdfUpload.addEventListener('change', (event) => {
-        //     const file = event.target.files[0];
-        //     if (file && file.type === 'application/pdf') {
-        //         const reader = new FileReader();
-        //         reader.onload = (e) => {
-        //             const typedArray = new Uint8Array(e.target.result);
-        //             files.set(file.name, typedArray);  // Store file content
-        //             addToFileMenu(file.name);  // Add to menu
-        //         };
-        //         reader.readAsArrayBuffer(file);
-        //     }
-        // });
-
-        // function addToFileMenu(fileName) {
-        //     const li = document.createElement('li');
-        //     li.textContent = fileName;
-        //     li.addEventListener('click', () => displayPDF(fileName));  // Attach click handler
-        //     fileMenu.appendChild(li);
-        // }
-
-        // function displayPDF(fileName) {
-        //     const pdfData = files.get(fileName);
-        //     pdfjsLib.getDocument({ data: pdfData }).promise.then((pdf) => {
-        //         pdfContainer.innerHTML = '';  // Clear previous content
-
-        //         for (let i = 1; i <= pdf.numPages; i++) {
-        //             const canvas = document.createElement('canvas');
-        //             canvas.style.display = 'block';
-        //             canvas.style.margin = '10px auto';  // Center canvas
-        //             pdfContainer.appendChild(canvas);
-        //             renderPage(pdf, i, canvas);
-        //         }
-        //     });
-        // }
-
-        function renderPage(pdf, pageNumber, canvas) {
-            pdf.getPage(pageNumber).then((page) => {
-                const viewport = page.getViewport({
-                    scale: pdfContainer.clientWidth / page.getViewport({ scale: 1 }).width,
-                });
-                const context = canvas.getContext('2d');
-                canvas.width = viewport.width;
-                canvas.height = viewport.height;
-                page.render({ canvasContext: context, viewport: viewport }).promise;
-            });
-        }
-
         centerBar.addEventListener('mousedown', () => {
             isDragging = true;
             document.body.style.cursor = 'col-resize';
@@ -248,6 +201,18 @@
                 });
         }
         document.addEventListener('DOMContentLoaded', listDocuments);
+
+        function renderPage(pdf, pageNumber, canvas) {
+            pdf.getPage(pageNumber).then((page) => {
+                const viewport = page.getViewport({
+                    scale: pdfContainer.clientWidth / page.getViewport({ scale: 1 }).width,
+                });
+                const context = canvas.getContext('2d');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                page.render({ canvasContext: context, viewport: viewport }).promise;
+            });
+        }
     </script>
 </body>
 </html>
