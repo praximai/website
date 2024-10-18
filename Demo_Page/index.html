@@ -316,7 +316,6 @@
                 console.log('No user signed in.');
                 return;
             }
-            console.log("got here")
             
             try {
                 generateMenu.innerHTML = '';
@@ -352,8 +351,8 @@
             fetch(fileUrl)
                 .then((response) => {
                     if (!response.ok) {
-                        throw new Error('Failed to fetch the text file');
                         console.log(fileUrl)
+                        throw new Error('Failed to fetch the text file');
                     }
                     return response.text(); 
                 })
