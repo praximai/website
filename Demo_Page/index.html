@@ -363,7 +363,7 @@
         // Rescale canvas on resize
         function rescaleCanvas(canvas, viewport) {
             const containerWidth = pdfContainer.clientWidth;  // Get current container width
-            const scale = 0.93 * containerWidth / viewport.width;  // Calculate the new scale
+            const scale = 0.94 * containerWidth / viewport.width;  // Calculate the new scale
 
             // Apply scaled dimensions using CSS (without affecting the internal canvas resolution)
             canvas.style.width = `${viewport.width * scale}px`;
