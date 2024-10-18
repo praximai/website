@@ -193,6 +193,10 @@
             if (!user) {
                 window.location.href = "../";
             }
+            else {
+                listDocuments();
+                listGenerateDocuments();
+            }
         });
 
         // Logout function
@@ -263,7 +267,6 @@
                 console.error('Error listing documents:', error);
             }
         }
-        document.addEventListener('DOMContentLoaded', listDocuments);
 
         // add to file menu
         function addToFileMenu(fileName, fileUrl) {
@@ -297,8 +300,6 @@
                 console.error('Error listing documents:', error);
             }
         }
-        document.addEventListener('DOMContentLoaded', listGenerateDocuments);
-
         // add to generate menu
         const generateMenu = document.getElementById('generated-file-list');
         function addToGenerateMenu(fileName, fileUrl) {
