@@ -335,16 +335,29 @@
         // Render individual page with scaling
         function renderPage(pdf, pageNumber, canvas) {
             pdf.getPage(pageNumber).then((page) => {
-                const containerWidth = pdfContainer.clientWidth;  // Get the container's width
-                const viewport = page.getViewport({ scale: 1 });
-                const scale = containerWidth / viewport.width;  // Calculate scale to fit the width
-                const scaledViewport = page.getViewport({ scale });
+                const containerWidth = pdfContainer.clientWidth;  // Get container width
 
-                const context = canvas.getContext('2d');
+                const viewport = page.getViewport({ scale: 1 });  // Initial viewport with scale 1
+                const scale = containerWidth / viewport.width;  // Calculate scaling factor
+
+                const scaledViewport = page.getViewport({ scale });  // Scaled viewport
+
+                const context = canvas.getContext('2d');  // Get canvas context
+
+                // Adjust canvas size to the scaled dimensions
                 canvas.width = scaledViewport.width;
                 canvas.height = scaledViewport.height;
 
-                page.render({ canvasContext: context, viewport: scaledViewport }).promise;
+                // Ensure the canvas respects its actual width
+                canvas.style.width = `${scaledViewport.width}px`;
+                canvas.style.height = `${scaledViewport.height}px`;
+
+                // Render the page content onto the canvas
+                page.render({ canvasContext: context, viewport: scaledViewport }).promise.then(() => {
+                    console.log(`Rendered page ${pageNumber}`);
+                });
+            }).catch((error) => {
+                console.error(`Error rendering page ${pageNumber}:`, error);
             });
         }
 
