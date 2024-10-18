@@ -338,11 +338,11 @@
         // add to generate menu
         const generateMenu = document.getElementById('generated-file-list');
         function addToGenerateMenu(fileName, fileUrl) {
-            const li = document.createElement('li');
-            li.textContent = fileName;
+            const gen_li = document.createElement('li');
+            gen_li.textContent = fileName;
 
-            li.addEventListener('click', () => displayGeneratedText(fileName, fileUrl));
-            generateMenu.appendChild(li);
+            gen_li.addEventListener('click', () => displayGeneratedText(fileName, fileUrl));
+            generateMenu.appendChild(gen_li);
         }
 
 
