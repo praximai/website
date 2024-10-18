@@ -34,6 +34,7 @@
     <div class="right-panel" id="right-panel">
         <div class="pdf-container" id="text-container">
             <button id="accept-button" onclick="">Accept Output</button>
+            <p>Document Viewer</p>
         </div>
         <button id="logout-button" onclick="logOut()">Log Out</button>
         <button style="position: absolute; bottom: 10px; right: 10px;" 
@@ -161,220 +162,265 @@
             document.addEventListener('mouseup', onMouseUp);
         });
     </script>
-<script type="module">
-    // Import necessary Firebase functions
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
-    import { getAuth, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
-    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
-    import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js';
+    <script type="module">
+        // Import necessary Firebase functions
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+        import { getAuth, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+        import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js';
 
-    // Firebase configuration
-    const firebaseConfig = {
-        apiKey: "AIzaSyBZvsBcAoIJLbQc4yINQz78oyCovB4RDTA",
-        authDomain: "praximai-438817.firebaseapp.com",
-        projectId: "praximai-438817",
-        storageBucket: "praximai-438817.appspot.com",
-        messagingSenderId: "274586621759",
-        appId: "1:274586621759:web:b9f20b3da3329327eba58a",
-        measurementId: "G-EQ7HTDC8T3"
-    };
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBZvsBcAoIJLbQc4yINQz78oyCovB4RDTA",
+            authDomain: "praximai-438817.firebaseapp.com",
+            projectId: "praximai-438817",
+            storageBucket: "praximai-438817.appspot.com",
+            messagingSenderId: "274586621759",
+            appId: "1:274586621759:web:b9f20b3da3329327eba58a",
+            measurementId: "G-EQ7HTDC8T3"
+        };
 
-    // Initialize Firebase
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getFirestore(app);
-    const storage = getStorage(app);
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
 
-    const fileCollection = collection(db, 'pdfFiles');
+        const fileCollection = collection(db, 'pdfFiles');
 
-    // Handle authentication
-    auth.onAuthStateChanged((user) => {
-        if (!user) {
-            window.location.href = "../";
-        }
-    });
-
-    // Logout function
-    window.logOut = function() {
-        auth.signOut().then(() => {
-            window.location.href = "../";
-        }).catch((error) => {
-            console.error("Error during logout", error);
+        // Handle authentication
+        auth.onAuthStateChanged((user) => {
+            if (!user) {
+                window.location.href = "../";
+            }
         });
-    };
 
-    // upload documents
-    const pdfUpload = document.getElementById('fileUpload');
-    pdfUpload.addEventListener('change', async (event) => {
-        const file = event.target.files[0];
-        if (file && file.type === 'application/pdf') {
+        // Logout function
+        window.logOut = function() {
+            auth.signOut().then(() => {
+                window.location.href = "../";
+            }).catch((error) => {
+                console.error("Error during logout", error);
+            });
+        };
+
+        // upload documents
+        const pdfUpload = document.getElementById('fileUpload');
+        pdfUpload.addEventListener('change', async (event) => {
+            const file = event.target.files[0];
+            if (file && file.type === 'application/pdf') {
+                try {
+                    const user = auth.currentUser;
+                    if (!user) {
+                        alert('You must be logged in to upload files.');
+                        return;
+                    }
+                    const modifiedFileName = user.uid + '_' + file.name;
+                    const storageRef = ref(storage, 'documents/' + modifiedFileName);
+                    await uploadBytes(storageRef, file);
+                    const url = await getDownloadURL(storageRef);
+                    await addDoc(fileCollection, {
+                        name: file.name,
+                        storageName: modifiedFileName,
+                        url: url,
+                        uid: user.uid,
+                        isOriginal: true
+                    });
+                    console.log('Uploaded and added to Firestore:', file.name);
+                    listDocuments();
+                    uploadGeneration(file.name, url);
+                    listGenerateDocuments();
+                } catch (error) {
+                    console.error('Upload failed:', error);
+                }
+            } else {
+                alert('Please upload a PDF file.');
+            }
+        });
+        
+        // create ORIGINAL list
+        import { query, where, and} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+        const fileMenu = document.getElementById('uploaded-file-list');
+        async function listDocuments() {
+            const user = auth.currentUser;
+            if (!user) {
+                console.log('No user signed in.');
+                return;
+            }
+            
             try {
+                fileMenu.innerHTML = '';
+                const q = query(fileCollection, and(
+                    where("uid", "==", user.uid),
+                    where("isOriginal", "==", true)
+                ));
+                const querySnapshot = await getDocs(q);
+                querySnapshot.forEach((docSnapshot) => {
+                    const fileData = docSnapshot.data();
+                    addToFileMenu(fileData.name, fileData.url);
+                });
+            } catch (error) {
+                console.error('Error listing documents:', error);
+            }
+        }
+        document.addEventListener('DOMContentLoaded', listDocuments);
+
+        // add to file menu
+        function addToFileMenu(fileName, fileUrl) {
+            const li = document.createElement('li');
+            li.textContent = fileName;
+
+            li.addEventListener('click', () => displayPDF(fileName, fileUrl));
+            fileMenu.appendChild(li);
+        }
+
+        // display the current original pdf
+        const pdfContainer = document.getElementById('pdf-container');
+        function displayPDF(fileName, fileUrl) {
+            fetch(fileUrl)
+                .then((response) => response.arrayBuffer())
+                .then((pdfData) => {
+                    pdfjsLib.getDocument({ data: pdfData }).promise.then((pdf) => {
+                        pdfContainer.innerHTML = ''; 
+                        for (let i = 1; i <= pdf.numPages; i++) {
+                            const canvas = document.createElement('canvas');
+                            canvas.style.display = 'block';
+                            canvas.style.margin = '10px auto';
+                            pdfContainer.appendChild(canvas);
+                            renderPage(pdf, i, canvas);
+                        }
+                    });
+                })
+                .catch((error) => {
+                    console.error('Error displaying PDF:', error);
+                });
+        }
+
+        // render original page
+        function renderPage(pdf, pageNumber, canvas) {
+            pdf.getPage(pageNumber).then((page) => {
+                const viewport = page.getViewport({
+                    scale: pdfContainer.clientWidth / page.getViewport({ scale: 1 }).width,
+                });
+                const context = canvas.getContext('2d');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                page.render({ canvasContext: context, viewport: viewport }).promise;
+            });
+        }
+
+        // create GENERATE list
+        const generateMenu = document.getElementById('generated-file-list');
+        async function listGenerateDocuments() {
+            const user = auth.currentUser;
+            if (!user) {
+                console.log('No user signed in.');
+                return;
+            }
+            
+            try {
+                fileMenu.innerHTML = '';
+                const q = query(fileCollection, and(
+                    where("uid", "==", user.uid),
+                    where("isOriginal", "==", false)
+                ));
+                const querySnapshot = await getDocs(q);
+                querySnapshot.forEach((docSnapshot) => {
+                    const fileData = docSnapshot.data();
+                    addToGenerateMenu(fileData.name, fileData.url);
+                });
+            } catch (error) {
+                console.error('Error listing documents:', error);
+            }
+        }
+        document.addEventListener('DOMContentLoaded', listGenerateDocuments);
+
+        // add to generate menu
+        function addToGenerateMenu(fileName, fileUrl) {
+            const li = document.createElement('li');
+            li.textContent = fileName;
+
+            li.addEventListener('click', () => displayGeneratedText(fileName, fileUrl));
+            generateMenu.appendChild(li);
+        }
+
+
+        const textContainer = document.getElementById('text-container');
+
+        function displayGeneratedText(fileUrl) {
+            fetch(fileUrl)
+                .then((response) => {
+                    if (!response.ok) {
+                        throw new Error('Failed to fetch the text file');
+                    }
+                    return response.text(); 
+                })
+                .then((text) => {
+                    textContainer.innerHTML = ''; 
+                    const preElement = document.createElement('pre');
+                    preElement.style.whiteSpace = 'pre-wrap';
+                    preElement.textContent = text;
+                    textContainer.appendChild(preElement);
+                })
+                .catch((error) => {
+                    console.error('Error displaying text file:', error);
+                });
+        }
+
+        // update the generated storage
+        async function uploadGeneration(filename, fileUrl) {
+            try {
+                const summaryText = await generateSummary(fileUrl);
                 const user = auth.currentUser;
                 if (!user) {
                     alert('You must be logged in to upload files.');
                     return;
                 }
-                const modifiedFileName = user.uid + '_' + file.name;
-                const storageRef = ref(storage, 'documents/' + modifiedFileName);
-                await uploadBytes(storageRef, file);
+                const textBlob = new Blob([summaryText], { type: 'text/plain' });
+                const modifiedFileName = user.uid + '_' + filename + '_summary.txt';
+                const storageRef = ref(storage, 'texts/' + modifiedFileName);
+                await uploadBytes(storageRef, textBlob);
                 const url = await getDownloadURL(storageRef);
                 await addDoc(fileCollection, {
-                    name: file.name,
+                    name: filename,
                     storageName: modifiedFileName,
                     url: url,
                     uid: user.uid,
-                    isOriginal: true
+                    isOriginal: false
                 });
-                console.log('Uploaded and added to Firestore:', file.name);
-                listDocuments();
-                listGenerateDocuments();
-            } catch (error) {
+            }  catch (error) {
                 console.error('Upload failed:', error);
             }
-        } else {
-            alert('Please upload a PDF file.');
         }
-    });
-    
-    // create ORIGINAL list
-    import { query, where, and} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
-    const fileMenu = document.getElementById('uploaded-file-list');
-    async function listDocuments() {
-        const user = auth.currentUser;
-        if (!user) {
-            console.log('No user signed in.');
-            return;
-        }
-        
-        try {
-            fileMenu.innerHTML = '';
-            const q = query(fileCollection, and(
-                where("uid", "==", user.uid),
-                where("isOriginal", "==", true)
-            ));
-            const querySnapshot = await getDocs(q);
-            querySnapshot.forEach((docSnapshot) => {
-                const fileData = docSnapshot.data();
-                addToFileMenu(fileData.name, fileData.url);
-            });
-        } catch (error) {
-            console.error('Error listing documents:', error);
-        }
-    }
-    document.addEventListener('DOMContentLoaded', listDocuments);
 
-    // add to file menu
-    function addToFileMenu(fileName, fileUrl) {
-        const li = document.createElement('li');
-        li.textContent = fileName;
-
-        li.addEventListener('click', () => displayPDF(fileName, fileUrl));
-        fileMenu.appendChild(li);
-    }
-
-    // display the current original pdf
-    const pdfContainer = document.getElementById('pdf-container');
-    function displayPDF(fileName, fileUrl) {
-        fetch(fileUrl)
-            .then((response) => response.arrayBuffer())
-            .then((pdfData) => {
-                pdfjsLib.getDocument({ data: pdfData }).promise.then((pdf) => {
-                    pdfContainer.innerHTML = ''; 
-                    for (let i = 1; i <= pdf.numPages; i++) {
-                        const canvas = document.createElement('canvas');
-                        canvas.style.display = 'block';
-                        canvas.style.margin = '10px auto';
-                        pdfContainer.appendChild(canvas);
-                        renderPage(pdf, i, canvas);
-                    }
-                });
+        // call summarize function to create generated text
+        function generateSummary(fileUrl) {
+            return fetch(`https://us-central1-praximai-438817.cloudfunctions.net/get_request`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    action: 'generate_summary',
+                    input_prompt: fileUrl,
+                }),
+                mode: 'cors'
             })
-            .catch((error) => {
-                console.error('Error displaying PDF:', error);
-            });
-    }
-    // render original page
-    function renderPage(pdf, pageNumber, canvas) {
-        pdf.getPage(pageNumber).then((page) => {
-            const viewport = page.getViewport({
-                scale: pdfContainer.clientWidth / page.getViewport({ scale: 1 }).width,
-            });
-            const context = canvas.getContext('2d');
-            canvas.width = viewport.width;
-            canvas.height = viewport.height;
-            page.render({ canvasContext: context, viewport: viewport }).promise;
-        });
-    }
-
-    // create GENERATE list
-    const generateMenu = document.getElementById('generated-file-list');
-    async function listGenerateDocuments() {
-        const user = auth.currentUser;
-        if (!user) {
-            console.log('No user signed in.');
-            return;
-        }
-        
-        try {
-            fileMenu.innerHTML = '';
-            const q = query(fileCollection, and(
-                where("uid", "==", user.uid),
-                where("isOriginal", "==", false)
-            ));
-            const querySnapshot = await getDocs(q);
-            querySnapshot.forEach((docSnapshot) => {
-                const fileData = docSnapshot.data();
-                addToGenerateMenu(fileData.name, fileData.url);
-            });
-        } catch (error) {
-            console.error('Error listing documents:', error);
-        }
-    }
-    document.addEventListener('DOMContentLoaded', listGenerateDocuments);
-
-    // add to generate menu
-    function addToGenerateMenu(fileName, fileUrl) {
-        const li = document.createElement('li');
-        li.textContent = fileName;
-
-        li.addEventListener('click', () => displayGeneratedPDF(fileName, fileUrl));
-        generateMenu.appendChild(li);
-    }
-
-    // display the current generate pdf
-    const textContainer = document.getElementById('text-container');
-    function displayGeneratedPDF(fileName, fileUrl) {
-        fetch(fileUrl)
-            .then((response) => response.arrayBuffer())
-            .then((pdfData) => {
-                pdfjsLib.getDocument({ data: pdfData }).promise.then((pdf) => {
-                    textContainer.innerHTML = ''; 
-                    for (let i = 1; i <= pdf.numPages; i++) {
-                        const canvas = document.createElement('canvas');
-                        canvas.style.display = 'block';
-                        canvas.style.margin = '10px auto';
-                        textContainer.appendChild(canvas);
-                        renderGeneratePage(pdf, i, canvas);
-                    }
-                });
+            .then(response => {
+                if (!response.ok) {
+                throw new Error('Network response was not ok');
+                }
+                return response.json();
             })
-            .catch((error) => {
-                console.error('Error displaying PDF:', error);
+            .then(json => {
+                const response_result = json.result;
+                console.log('API Response Result:', response_result);
+                return response_result;
+            })
+                .catch(error => {
+                    console.error('There has been a problem with your fetch operation:', error);
             });
-    }
-
-    // render generate page
-    function renderGeneratePage(pdf, pageNumber, canvas) {
-        pdf.getPage(pageNumber).then((page) => {
-            const viewport = page.getViewport({
-                scale: textContainer.clientWidth / page.getViewport({ scale: 1 }).width,
-            });
-            const context = canvas.getContext('2d');
-            canvas.width = viewport.width;
-            canvas.height = viewport.height;
-            page.render({ canvasContext: context, viewport: viewport }).promise;
-        });
-    }        
-</script>
+        }
+    </script>
 </body>
 </html>
