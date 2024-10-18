@@ -131,7 +131,8 @@
                     await uploadBytes(storageRef, file);
                     const url = await getDownloadURL(storageRef);
                     await addDoc(fileCollection, {
-                        name: modifiedFileName,
+                        name: file.name,
+                        storageName: modifiedFileName,
                         url: url,
                         uid: user.uid
                     });
@@ -174,7 +175,7 @@
             const li = document.createElement('li');
             li.textContent = fileName;
 
-            li.addEventListener('click', () => displayPDF(fileName, fileUrl)); // Attach click handler with URL parameter
+            li.addEventListener('click', () => displayPDF(fileName, fileUrl));
             fileMenu.appendChild(li);
         }
 
@@ -184,11 +185,11 @@
                 .then((response) => response.arrayBuffer())
                 .then((pdfData) => {
                     pdfjsLib.getDocument({ data: pdfData }).promise.then((pdf) => {
-                        pdfContainer.innerHTML = ''; // Clear previous content
+                        pdfContainer.innerHTML = ''; 
                         for (let i = 1; i <= pdf.numPages; i++) {
                             const canvas = document.createElement('canvas');
                             canvas.style.display = 'block';
-                            canvas.style.margin = '10px auto'; // Center canvas
+                            canvas.style.margin = '10px auto';
                             pdfContainer.appendChild(canvas);
                             renderPage(pdf, i, canvas);
                         }
