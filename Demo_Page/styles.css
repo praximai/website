@@ -49,6 +49,7 @@ body {
     flex-direction: column;
     padding: 10px;
     overflow-y: auto;
+    height: 100%; /* Ensure they take up available height */
 }
 
 .left-panel {
@@ -68,6 +69,9 @@ body {
     padding: 10px;
     border-radius: 5px;
     border: 1px solid #ddd;
+    overflow: auto; /* Add scroll if needed */
+    width: 100%;  /* Make sure it takes up the full width */
+    box-sizing: border-box; /* Include padding in width calculation */
 }
 
 #logout-button {
