@@ -196,6 +196,7 @@
         });
         
         // create list
+        import { query, where } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
         const fileMenu = document.getElementById('file-menu');
         async function listDocuments() {
             const user = auth.currentUser;
