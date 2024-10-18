@@ -134,7 +134,8 @@
                         name: file.name,
                         storageName: modifiedFileName,
                         url: url,
-                        uid: user.uid
+                        uid: user.uid,
+                        isOriginal: true
                     });
                     console.log('Uploaded and added to Firestore:', file.name);
                     listDocuments();
@@ -158,7 +159,10 @@
             
             try {
                 fileMenu.innerHTML = '';
-                const q = query(fileCollection, where("uid", "==", user.uid));
+                const q = query(fileCollection, and(
+                    where("uid", "==", user.uid),
+                    where("isOriginal", "==", true)
+                ));
                 const querySnapshot = await getDocs(q);
                 querySnapshot.forEach((docSnapshot) => {
                     const fileData = docSnapshot.data();
