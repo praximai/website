@@ -89,7 +89,7 @@
                     console.error('There has been a problem with your fetch operation:', error);
             });
         }
-        
+
         function sendMessage() {
             const input = document.getElementById('chat-input');
             const message = input.value.trim();
@@ -135,21 +135,21 @@
 
         const fileCollection = collection(db, 'pdfFiles');
 
-        // // Handle authentication
-        // auth.onAuthStateChanged((user) => {
-        //     if (!user) {
-        //         window.location.href = "../";
-        //     }
-        // });
+        // Handle authentication
+        auth.onAuthStateChanged((user) => {
+            if (!user) {
+                window.location.href = "../";
+            }
+        });
 
-        // // Logout function
-        // window.logOut = function() {
-        //     auth.signOut().then(() => {
-        //         window.location.href = "../";
-        //     }).catch((error) => {
-        //         console.error("Error during logout", error);
-        //     });
-        // };
+        // Logout function
+        window.logOut = function() {
+            auth.signOut().then(() => {
+                window.location.href = "../";
+            }).catch((error) => {
+                console.error("Error during logout", error);
+            });
+        };
 
         // upload documents
         const pdfUpload = document.getElementById('fileUpload');
