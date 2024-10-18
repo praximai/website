@@ -121,6 +121,7 @@
         // upload documents
         const pdfUpload = document.getElementById('fileUpload');
         pdfUpload.addEventListener('change', async (event) => {
+            const user = auth.currentUser;
             const file = event.target.files[0];
             if (file && file.type === 'application/pdf') {
                 try {
