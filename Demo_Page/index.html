@@ -342,31 +342,19 @@
         // Render individual pages only once
         function renderPage(pdf, pageNumber, canvas) {
             pdf.getPage(pageNumber).then((page) => {
-                const containerWidth = pdfContainer.clientWidth; // Get the container width
-
-                // Scale to fit the container width, but render with device pixel ratio for sharpness
-                const viewport = page.getViewport({ scale: 3 }); // Initial viewport with scale 1
-                const scale = 0.94 * containerWidth / viewport.width; // Calculate scaling factor
-                const scaledViewport = page.getViewport({ scale }); // Create a scaled viewport
-
+                const initialViewport = page.getViewport({ scale: 2 });
                 const context = canvas.getContext('2d');
 
-                // Set the canvas size to match the scaled viewport, accounting for device pixel ratio
-                const dpr = window.devicePixelRatio || 1; // Use the device pixel ratio for sharp rendering
-                canvas.width = scaledViewport.width * dpr; // High-resolution width
-                canvas.height = scaledViewport.height * dpr; // High-resolution height
+                // Set canvas size based on the initial viewport
+                canvas.width = initialViewport.width;
+                canvas.height = initialViewport.height;
 
-                // Scale the context to ensure content matches the canvas size visually
-                context.scale(dpr, dpr);
-
-                // Render the page content onto the canvas at high resolution
-                page.render({ canvasContext: context, viewport: scaledViewport }).promise.then(() => {
+                // Render the page content onto the canvas
+                page.render({ canvasContext: context, viewport: initialViewport }).promise.then(() => {
                     console.log(`Rendered page ${pageNumber}`);
+                    // Scale the canvas to fit the container initially
+                    rescaleCanvas(canvas, initialViewport);
                 });
-
-                // Set the canvas CSS size to match the container, without changing internal resolution
-                canvas.style.width = `${scaledViewport.width}px`;
-                canvas.style.height = `${scaledViewport.height}px`;
             }).catch((error) => {
                 console.error(`Error rendering page ${pageNumber}:`, error);
             });
