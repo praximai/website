@@ -150,7 +150,7 @@
         const fileCollection = collection(db, 'pdfFiles');
 
         // Handle authentication
-        firebase.auth().onAuthStateChanged((user) => {
+        auth.onAuthStateChanged((user) => {
             if (!user) {
                 window.location.href = "../"; // Redirect to homepage or login page if not authenticated
             }
@@ -158,7 +158,7 @@
 
         // Logout function
         window.logOut = function() {
-            firebase.auth().signOut().then(() => {
+            auth.signOut().then(() => {
                 window.location.href = "../"; // Redirect to homepage or login page after logout
             }).catch((error) => {
                 console.error("Error during logout", error);
