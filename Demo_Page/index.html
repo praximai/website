@@ -320,7 +320,7 @@
                         for (let i = 1; i <= pdf.numPages; i++) {
                             const canvas = document.createElement('canvas');
                             canvas.style.display = 'block';
-                            canvas.style.margin = '10px';
+                            canvas.style.margin = 'auto auto';
                             pdfContainer.appendChild(canvas);
                             renderPage(pdf, i, canvas);
                         }
