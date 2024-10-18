@@ -310,13 +310,13 @@
         }
 
         // create GENERATE list
-        const generateMenu = document.getElementById('generated-file-list');
         async function listGenerateDocuments() {
             const user = auth.currentUser;
             if (!user) {
                 console.log('No user signed in.');
                 return;
             }
+            console.log("got here")
             
             try {
                 fileMenu.innerHTML = '';
@@ -336,6 +336,7 @@
         document.addEventListener('DOMContentLoaded', listGenerateDocuments);
 
         // add to generate menu
+        const generateMenu = document.getElementById('generated-file-list');
         function addToGenerateMenu(fileName, fileUrl) {
             const li = document.createElement('li');
             li.textContent = fileName;
