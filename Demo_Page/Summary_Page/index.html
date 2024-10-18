@@ -37,8 +37,8 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <script>
-        const pdfUpload = document.getElementById('fileUpload');
-        const fileMenu = document.getElementById('file-menu');
+        // const pdfUpload = document.getElementById('fileUpload');
+        // const fileMenu = document.getElementById('file-menu');
         const pdfContainer = document.getElementById('pdf-container');
         const chatMessages = document.getElementById('chat-messages');
         const centerBar = document.getElementById('center-bar');
@@ -47,52 +47,52 @@
         const files = new Map();  // Store files with their content
         let isDragging = false;
 
-        pdfUpload.addEventListener('change', (event) => {
-            const file = event.target.files[0];
-            if (file && file.type === 'application/pdf') {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    const typedArray = new Uint8Array(e.target.result);
-                    files.set(file.name, typedArray);  // Store file content
-                    addToFileMenu(file.name);  // Add to menu
-                };
-                reader.readAsArrayBuffer(file);
-            }
-        });
+        // pdfUpload.addEventListener('change', (event) => {
+        //     const file = event.target.files[0];
+        //     if (file && file.type === 'application/pdf') {
+        //         const reader = new FileReader();
+        //         reader.onload = (e) => {
+        //             const typedArray = new Uint8Array(e.target.result);
+        //             files.set(file.name, typedArray);  // Store file content
+        //             addToFileMenu(file.name);  // Add to menu
+        //         };
+        //         reader.readAsArrayBuffer(file);
+        //     }
+        // });
 
-        function addToFileMenu(fileName) {
-            const li = document.createElement('li');
-            li.textContent = fileName;
-            li.addEventListener('click', () => displayPDF(fileName));  // Attach click handler
-            fileMenu.appendChild(li);
-        }
+        // function addToFileMenu(fileName) {
+        //     const li = document.createElement('li');
+        //     li.textContent = fileName;
+        //     li.addEventListener('click', () => displayPDF(fileName));  // Attach click handler
+        //     fileMenu.appendChild(li);
+        // }
 
-        function displayPDF(fileName) {
-            const pdfData = files.get(fileName);
-            pdfjsLib.getDocument({ data: pdfData }).promise.then((pdf) => {
-                pdfContainer.innerHTML = '';  // Clear previous content
+        // function displayPDF(fileName) {
+        //     const pdfData = files.get(fileName);
+        //     pdfjsLib.getDocument({ data: pdfData }).promise.then((pdf) => {
+        //         pdfContainer.innerHTML = '';  // Clear previous content
 
-                for (let i = 1; i <= pdf.numPages; i++) {
-                    const canvas = document.createElement('canvas');
-                    canvas.style.display = 'block';
-                    canvas.style.margin = '10px auto';  // Center canvas
-                    pdfContainer.appendChild(canvas);
-                    renderPage(pdf, i, canvas);
-                }
-            });
-        }
+        //         for (let i = 1; i <= pdf.numPages; i++) {
+        //             const canvas = document.createElement('canvas');
+        //             canvas.style.display = 'block';
+        //             canvas.style.margin = '10px auto';  // Center canvas
+        //             pdfContainer.appendChild(canvas);
+        //             renderPage(pdf, i, canvas);
+        //         }
+        //     });
+        // }
 
-        function renderPage(pdf, pageNumber, canvas) {
-            pdf.getPage(pageNumber).then((page) => {
-                const viewport = page.getViewport({
-                    scale: pdfContainer.clientWidth / page.getViewport({ scale: 1 }).width,
-                });
-                const context = canvas.getContext('2d');
-                canvas.width = viewport.width;
-                canvas.height = viewport.height;
-                page.render({ canvasContext: context, viewport: viewport }).promise;
-            });
-        }
+        // function renderPage(pdf, pageNumber, canvas) {
+        //     pdf.getPage(pageNumber).then((page) => {
+        //         const viewport = page.getViewport({
+        //             scale: pdfContainer.clientWidth / page.getViewport({ scale: 1 }).width,
+        //         });
+        //         const context = canvas.getContext('2d');
+        //         canvas.width = viewport.width;
+        //         canvas.height = viewport.height;
+        //         page.render({ canvasContext: context, viewport: viewport }).promise;
+        //     });
+        // }
 
         centerBar.addEventListener('mousedown', () => {
             isDragging = true;
@@ -152,18 +152,101 @@
         // Handle authentication
         auth.onAuthStateChanged((user) => {
             if (!user) {
-                window.location.href = "../"; // Redirect to homepage or login page if not authenticated
+                window.location.href = "../";
             }
         });
 
         // Logout function
         window.logOut = function() {
             auth.signOut().then(() => {
-                window.location.href = "../"; // Redirect to homepage or login page after logout
+                window.location.href = "../";
             }).catch((error) => {
                 console.error("Error during logout", error);
             });
         };
+
+        // upload documents
+        const pdfUpload = document.getElementById('fileUpload');
+        pdfUpload.addEventListener('change', async (event) => {
+            const file = event.target.files[0];
+            if (file && file.type === 'application/pdf') {
+                try {
+                    const storageRef = ref(storage, 'documents/' + file.name);
+
+                    const user = auth.currentUser;
+                    if (!user) {
+                        alert('You must be logged in to upload files.');
+                        return;
+                    }
+                    await uploadBytes(storageRef, file);
+                    const url = await getDownloadURL(storageRef);
+                    await addDoc(fileCollection, {
+                        name: file.name,
+                        url: url,
+                        uid: user.uid
+                    });
+                    console.log('Uploaded and added to Firestore:', file.name);
+                    listDocuments();
+                } catch (error) {
+                    console.error('Upload failed:', error);
+                }
+            } else {
+                alert('Please upload a PDF file.');
+            }
+        });
+        
+        // create list
+        const fileMenu = document.getElementById('file-menu');
+        async function listDocuments() {
+            const user = auth.currentUser;
+            if (!user) {
+                console.log('No user signed in.');
+                return;
+            }
+            
+            try {
+                fileMenu.innerHTML = '';
+                const q = query(fileCollection, where("uid", "==", user.uid));
+                const querySnapshot = await getDocs(q);
+                querySnapshot.forEach((docSnapshot) => {
+                    const fileData = docSnapshot.data();
+                    addToFileMenu(fileData.name, fileData.url);
+                });
+            } catch (error) {
+                console.error('Error listing documents:', error);
+            }
+        }
+
+        // add to file menu
+        function addToFileMenu(fileName, fileUrl) {
+            const li = document.createElement('li');
+            li.textContent = fileName;
+
+            li.addEventListener('click', () => displayPDF(fileName, fileUrl)); // Attach click handler with URL parameter
+            fileMenu.appendChild(li);
+        }
+
+        // display the current pdf
+        function displayPDF(fileName, fileUrl) {
+            fetch(fileUrl)
+                .then((response) => response.arrayBuffer())
+                .then((pdfData) => {
+                    pdfjsLib.getDocument({ data: pdfData }).promise.then((pdf) => {
+                        pdfContainer.innerHTML = ''; // Clear previous content
+                        for (let i = 1; i <= pdf.numPages; i++) {
+                            const canvas = document.createElement('canvas');
+                            canvas.style.display = 'block';
+                            canvas.style.margin = '10px auto'; // Center canvas
+                            pdfContainer.appendChild(canvas);
+                            renderPage(pdf, i, canvas);
+                        }
+                    });
+                })
+                .catch((error) => {
+                    console.error('Error displaying PDF:', error);
+                });
+        }
+        document.addEventListener('DOMContentLoaded', listDocuments);
     </script>
 </body>
 </html>
