@@ -4,12 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="styles.css">
-    <title>Summarizaiton Page</title>
+    <title>Summarization Page</title>
 </head>
 <body>
     <div class="file-menu">
         <h4>Uploaded Files</h4>
-        <input type="file" id="upload-pdf" accept="application/pdf" style="margin-bottom: 10px;">
+        <input type="file" id="fileUpload" accept=".pdf" style="display:none;" onchange="uploadPDF()">
+        <button onclick="document.getElementById('fileUpload').click();">Upload Here</button>
         <ul id="file-menu"></ul>
     </div>
 
@@ -22,6 +23,7 @@
     <div class="center-bar" id="center-bar"></div>
 
     <div class="right-panel">
+        <button onclick="logOut()">Log Out</button>
         <div class="chat-box" id="chat-box">
             <div class="chat-messages" id="chat-messages">
                 <p><strong>User:</strong> Hello!</p>
@@ -35,7 +37,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <script>
-        const pdfUpload = document.getElementById('upload-pdf');
+        const pdfUpload = document.getElementById('fileUpload');
         const fileMenu = document.getElementById('file-menu');
         const pdfContainer = document.getElementById('pdf-container');
         const chatMessages = document.getElementById('chat-messages');
@@ -120,6 +122,48 @@
                 chatMessages.scrollTop = chatMessages.scrollHeight;
             }
         }
+    </script>
+    <script type="module">
+        // Import necessary Firebase functions
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+        import { getAuth, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+        import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBZvsBcAoIJLbQc4yINQz78oyCovB4RDTA",
+            authDomain: "praximai-438817.firebaseapp.com",
+            projectId: "praximai-438817",
+            storageBucket: "praximai-438817.appspot.com",
+            messagingSenderId: "274586621759",
+            appId: "1:274586621759:web:b9f20b3da3329327eba58a",
+            measurementId: "G-EQ7HTDC8T3"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        const fileCollection = collection(db, 'pdfFiles');
+
+        // Handle authentication
+        firebase.auth().onAuthStateChanged((user) => {
+            if (!user) {
+                window.location.href = "../"; // Redirect to homepage or login page if not authenticated
+            }
+        });
+
+        // Logout function
+        window.logOut = function() {
+            firebase.auth().signOut().then(() => {
+                window.location.href = "../"; // Redirect to homepage or login page after logout
+            }).catch((error) => {
+                console.error("Error during logout", error);
+            });
+        };
     </script>
 </body>
 </html>
