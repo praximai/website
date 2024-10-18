@@ -266,11 +266,22 @@
 
     // add to file menu
     function addToFileMenu(fileName, fileUrl) {
-        const li = document.createElement('li');
-        li.textContent = fileName;
+        const button = document.createElement('button');
+        button.textContent = fileName;
+        button.style.margin = '5px';
+        button.style.padding = '10px';
+        button.style.border = 'none';
+        button.style.borderRadius = '5px';
+        button.style.backgroundColor = '#4CAF50';
+        button.style.color = 'white';
+        button.style.cursor = 'pointer';
+        button.style.display = 'block';
+        button.style.width = '90%';
+        button.style.marginLeft = 'auto';
+        button.style.marginRight = 'auto';
 
-        li.addEventListener('click', () => displayPDF(fileName, fileUrl));
-        fileMenu.appendChild(li);
+        button.addEventListener('click', () => displayPDF(fileName, fileUrl));
+        document.getElementById('uploaded-file-list').appendChild(button);
     }
 
     // display the current original pdf
@@ -335,11 +346,22 @@
 
     // add to generate menu
     function addToGenerateMenu(fileName, fileUrl) {
-        const li = document.createElement('li');
-        li.textContent = fileName;
+        const button = document.createElement('button');
+        button.textContent = fileName;
+        button.style.margin = '5px';
+        button.style.padding = '10px';
+        button.style.border = 'none';
+        button.style.borderRadius = '5px';
+        button.style.backgroundColor = '#2196F3';
+        button.style.color = 'white';
+        button.style.cursor = 'pointer';
+        button.style.display = 'block';
+        button.style.width = '90%';
+        button.style.marginLeft = 'auto';
+        button.style.marginRight = 'auto';
 
-        li.addEventListener('click', () => displayGeneratedPDF(fileName, fileUrl));
-        generateMenu.appendChild(li);
+        button.addEventListener('click', () => displayGeneratedPDF(fileName, fileUrl));
+        document.getElementById('generated-file-list').appendChild(button);
     }
 
     // display the current generate pdf
