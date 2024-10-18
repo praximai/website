@@ -99,7 +99,7 @@
                 chatMessages.appendChild(newMessage);
                 input.value = '';
                 chatMessages.scrollTop = chatMessages.scrollHeight;                
-                generateText(mesage).then(result => {
+                generateText(message).then(result => {
                     newMessage = document.createElement('p');
                     newMessage.innerHTML = `<strong>Praxim:</strong> ${result}`;
                     chatMessages.appendChild(newMessage);
