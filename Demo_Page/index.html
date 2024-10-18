@@ -228,7 +228,7 @@
                     });
                     console.log('Uploaded and added to Firestore:', file.name);
                     listDocuments();
-                    uploadGeneration(file.name, url);
+                    await uploadGeneration(file.name, url);
                     listGenerateDocuments();
                 } catch (error) {
                     console.error('Upload failed:', error);
@@ -379,11 +379,12 @@
                 }
                 const textBlob = new Blob([summaryText], { type: 'text/plain' });
                 const modifiedFileName = user.uid + '_' + filename + '_summary.txt';
+                const modName = filename + "_" + "generated";
                 const storageRef = ref(storage, 'texts/' + modifiedFileName);
                 await uploadBytes(storageRef, textBlob);
                 const url = await getDownloadURL(storageRef);
                 await addDoc(fileCollection, {
-                    name: filename,
+                    name: modName,
                     storageName: modifiedFileName,
                     url: url,
                     uid: user.uid,
