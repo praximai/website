@@ -345,7 +345,7 @@
                 const containerWidth = pdfContainer.clientWidth; // Get the container width
 
                 // Scale to fit the container width, but render with device pixel ratio for sharpness
-                const viewport = page.getViewport({ scale: 3 }); // Initial viewport with scale 1
+                const viewport = page.getViewport({ scale: 1 }); // Initial viewport with scale 1
                 const scale = 0.94 * containerWidth / viewport.width; // Calculate scaling factor
                 const scaledViewport = page.getViewport({ scale }); // Create a scaled viewport
 
