@@ -167,3 +167,47 @@ body {
 .chat-input button:hover {
     background-color: #45a049;
 }
+
+#uploaded-file-list {
+    list-style-type: none; 
+    padding: 0; 
+}
+
+#uploaded-file-list li {
+    background-color: #007BFF; 
+    color: white; 
+    padding: 10px; 
+    margin: 5px 0;
+    border-radius: 5px; 
+    cursor: pointer; 
+    transition: background-color 0.3s ease; 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+}
+
+#uploaded-file-list li:hover {
+    background-color: #0056b3; 
+}
+
+#generated-file-list {
+    list-style-type: none; 
+    padding: 0; 
+}
+
+#generated-file-list li {
+    background-color: #007BFF; 
+    color: white; 
+    padding: 10px; 
+    margin: 5px 0; 
+    border-radius: 5px; 
+    cursor: pointer; 
+    transition: background-color 0.3s ease;
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+}
+
+#generated-file-list li:hover {
+    background-color: #0056b3; 
+}
