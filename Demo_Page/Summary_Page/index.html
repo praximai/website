@@ -61,6 +61,35 @@
             document.body.style.cursor = 'default';
         });
 
+
+        function generateText(inputs) {
+            return fetch(`https://us-central1-praximai-438817.cloudfunctions.net/get_request`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    action: 'generate_text',
+                    input_prompt: inputs,
+                }),
+                mode: 'cors'
+            })
+            .then(response => {
+                if (!response.ok) {
+                throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(json => {
+                const response_result = json.result;
+                console.log('API Response Result:', response_result);
+                return response_result;
+            })
+                .catch(error => {
+                    console.error('There has been a problem with your fetch operation:', error);
+            });
+        }
+        
         function sendMessage() {
             const input = document.getElementById('chat-input');
             const message = input.value.trim();
@@ -220,34 +249,6 @@
                 canvas.width = viewport.width;
                 canvas.height = viewport.height;
                 page.render({ canvasContext: context, viewport: viewport }).promise;
-            });
-        }
-
-        function generateText(inputs) {
-            return fetch(`https://us-central1-praximai-438817.cloudfunctions.net/get_request`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    action: 'generate_text',
-                    input_prompt: inputs,
-                }),
-                mode: 'cors'
-            })
-            .then(response => {
-                if (!response.ok) {
-                throw new Error('Network response was not ok');
-                }
-                return response.json();
-            })
-            .then(json => {
-                const response_result = json.result;
-                console.log('API Response Result:', response_result);
-                return response_result;
-            })
-                .catch(error => {
-                    console.error('There has been a problem with your fetch operation:', error);
             });
         }
     </script>
