@@ -124,7 +124,8 @@
             const file = event.target.files[0];
             if (file && file.type === 'application/pdf') {
                 try {
-                    const storageRef = ref(storage, 'documents/' + file.name);
+                    const modifiedFileName = user.uid + '_' + file.name;
+                    const storageRef = ref(storage, 'documents/' + modifiedFileName);
 
                     const user = auth.currentUser;
                     if (!user) {
@@ -134,7 +135,7 @@
                     await uploadBytes(storageRef, file);
                     const url = await getDownloadURL(storageRef);
                     await addDoc(fileCollection, {
-                        name: file.name,
+                        name: modifiedFileName,
                         url: url,
                         uid: user.uid
                     });
