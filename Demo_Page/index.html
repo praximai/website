@@ -310,37 +310,26 @@
             generateMenu.appendChild(gen_li);
         }
                 // display the current original pdf
-                        const pdfContainer = document.getElementById('pdf-container');
-        let currentPdf = null; // Store the current PDF to re-render on resize
-        let resizeTimeout = null; // Store the timeout for debouncing
+        const pdfContainer = document.getElementById('pdf-container');
+        let currentPdf = null;  // Store the currently loaded PDF
+        let canvases = [];      // Store references to canvas elements
 
-        // Use ResizeObserver to detect panel size changes
-        const resizeObserver = new ResizeObserver(() => {
-            // Debounce the re-render to avoid continuous rendering
-            clearTimeout(resizeTimeout);
-            resizeTimeout = setTimeout(() => {
-                if (currentPdf) {
-                    console.log('Re-rendering PDF due to resize...');
-                    displayPDF(currentPdf.name, currentPdf.url); // Re-render only after resizing stops
-                }
-            }, 200); // Adjust the debounce delay (200ms works well)
-        });
-
-        resizeObserver.observe(document.getElementById('left-panel'));
-
+        // Display the PDF only once
         function displayPDF(fileName, fileUrl) {
             fetch(fileUrl)
                 .then((response) => response.arrayBuffer())
                 .then((pdfData) => {
                     pdfjsLib.getDocument({ data: pdfData }).promise.then((pdf) => {
-                        currentPdf = { name: fileName, url: fileUrl }; // Store current PDF
-                        pdfContainer.innerHTML = ''; // Clear previous content
+                        currentPdf = { pdf, fileName, fileUrl };  // Store the loaded PDF
+                        pdfContainer.innerHTML = '';  // Clear previous content
+                        canvases = [];  // Reset canvas storage
 
                         for (let i = 1; i <= pdf.numPages; i++) {
                             const canvas = document.createElement('canvas');
                             canvas.style.display = 'block';
                             canvas.style.margin = '10px 10px';
                             pdfContainer.appendChild(canvas);
+                            canvases.push(canvas);  // Store the canvas for later rescaling
                             renderPage(pdf, i, canvas);
                         }
                     });
@@ -350,25 +339,47 @@
                 });
         }
 
+        // Render individual pages only once
         function renderPage(pdf, pageNumber, canvas) {
             pdf.getPage(pageNumber).then((page) => {
-                const containerWidth = pdfContainer.clientWidth;
-
-                const viewport = page.getViewport({ scale: 1 });
-                const scale = containerWidth / viewport.width;
-                const scaledViewport = page.getViewport({ scale });
-
+                const initialViewport = page.getViewport({ scale: 1 });
                 const context = canvas.getContext('2d');
-                canvas.width = scaledViewport.width;
-                canvas.height = scaledViewport.height;
 
-                page.render({ canvasContext: context, viewport: scaledViewport }).promise.then(() => {
+                // Set canvas size based on the initial viewport
+                canvas.width = initialViewport.width;
+                canvas.height = initialViewport.height;
+
+                // Render the page content onto the canvas
+                page.render({ canvasContext: context, viewport: initialViewport }).promise.then(() => {
                     console.log(`Rendered page ${pageNumber}`);
+                    // Scale the canvas to fit the container initially
+                    rescaleCanvas(canvas, initialViewport);
                 });
             }).catch((error) => {
                 console.error(`Error rendering page ${pageNumber}:`, error);
             });
         }
+
+        // Rescale canvas on resize
+        function rescaleCanvas(canvas, viewport) {
+            const containerWidth = pdfContainer.clientWidth;  // Get current container width
+            const scale = containerWidth / viewport.width;  // Calculate the new scale
+
+            // Apply scaled dimensions using CSS (without affecting the internal canvas resolution)
+            canvas.style.width = `${viewport.width * scale}px`;
+            canvas.style.height = `${viewport.height * scale}px`;
+        }
+
+        // Listen for resize events and rescale the canvases
+        const resizeObserver = new ResizeObserver(() => {
+            canvases.forEach((canvas) => {
+                const viewport = canvas.viewport || { width: canvas.width, height: canvas.height };
+                rescaleCanvas(canvas, viewport);  // Rescale each canvas
+            });
+        });
+
+        // Start observing the left panel for resizes
+        resizeObserver.observe(document.getElementById('left-panel'));
         const textContainer = document.getElementById('text-container');
         
         function displayGeneratedText(fileName, fileUrl) {
