@@ -70,7 +70,7 @@ body {
     border-radius: 5px;
     border: 1px solid #ddd;
     overflow: auto; /* Add scroll if needed */
-    width: min-content;  /* Make sure it takes up the full width */
+    width: fit-content;  /* Make sure it takes up the full width */
     box-sizing: border-box; /* Include padding in width calculation */
 }
 
