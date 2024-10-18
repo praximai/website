@@ -82,17 +82,17 @@
         //     });
         // }
 
-        // function renderPage(pdf, pageNumber, canvas) {
-        //     pdf.getPage(pageNumber).then((page) => {
-        //         const viewport = page.getViewport({
-        //             scale: pdfContainer.clientWidth / page.getViewport({ scale: 1 }).width,
-        //         });
-        //         const context = canvas.getContext('2d');
-        //         canvas.width = viewport.width;
-        //         canvas.height = viewport.height;
-        //         page.render({ canvasContext: context, viewport: viewport }).promise;
-        //     });
-        // }
+        function renderPage(pdf, pageNumber, canvas) {
+            pdf.getPage(pageNumber).then((page) => {
+                const viewport = page.getViewport({
+                    scale: pdfContainer.clientWidth / page.getViewport({ scale: 1 }).width,
+                });
+                const context = canvas.getContext('2d');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                page.render({ canvasContext: context, viewport: viewport }).promise;
+            });
+        }
 
         centerBar.addEventListener('mousedown', () => {
             isDragging = true;
