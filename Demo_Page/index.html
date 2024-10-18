@@ -342,7 +342,7 @@
         // Render individual pages only once
         function renderPage(pdf, pageNumber, canvas) {
             pdf.getPage(pageNumber).then((page) => {
-                const initialViewport = page.getViewport({ scale: 1 });
+                const initialViewport = page.getViewport({ scale: 3 });
                 const context = canvas.getContext('2d');
 
                 // Set canvas size based on the initial viewport
