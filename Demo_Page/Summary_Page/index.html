@@ -100,9 +100,9 @@
                 input.value = '';
                 chatMessages.scrollTop = chatMessages.scrollHeight;                
                 generateText(message).then(result => {
-                    newMessage = document.createElement('p');
-                    newMessage.innerHTML = `<strong>Praxim:</strong> ${result}`;
-                    chatMessages.appendChild(newMessage);
+                    const nextMessage = document.createElement('p');
+                    nextMessage.innerHTML = `<strong>Praxim:</strong> ${result}`;
+                    chatMessages.appendChild(nextMessage);
                     input.value = '';
                     chatMessages.scrollTop = chatMessages.scrollHeight;                          
                 });
