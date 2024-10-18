@@ -187,7 +187,7 @@
 
     const fileCollection = collection(db, 'pdfFiles');
 
-    // Handle authentication
+   /* // Handle authentication
     auth.onAuthStateChanged((user) => {
         if (!user) {
             window.location.href = "../";
@@ -201,7 +201,7 @@
         }).catch((error) => {
             console.error("Error during logout", error);
         });
-    };
+    };*/
 
     // upload documents
     const pdfUpload = document.getElementById('fileUpload');
@@ -296,13 +296,16 @@
     // render original page
     function renderPage(pdf, pageNumber, canvas) {
         pdf.getPage(pageNumber).then((page) => {
-            const viewport = page.getViewport({
-                scale: pdfContainer.clientWidth / page.getViewport({ scale: 1 }).width,
-            });
+            const containerWidth = pdfContainer.clientWidth;
+            const viewport = page.getViewport({ scale: 1 });
+            const scale = containerWidth / viewport.width; // Fit page width to container
+
+            const scaledViewport = page.getViewport({ scale });
             const context = canvas.getContext('2d');
-            canvas.width = viewport.width;
-            canvas.height = viewport.height;
-            page.render({ canvasContext: context, viewport: viewport }).promise;
+            canvas.width = scaledViewport.width;
+            canvas.height = scaledViewport.height;
+
+            page.render({ canvasContext: context, viewport: scaledViewport }).promise;
         });
     }
 
@@ -366,15 +369,18 @@
     // render generate page
     function renderGeneratePage(pdf, pageNumber, canvas) {
         pdf.getPage(pageNumber).then((page) => {
-            const viewport = page.getViewport({
-                scale: textContainer.clientWidth / page.getViewport({ scale: 1 }).width,
-            });
+            const containerWidth = textContainer.clientWidth;
+            const viewport = page.getViewport({ scale: 1 });
+            const scale = containerWidth / viewport.width; // Fit page width to container
+
+            const scaledViewport = page.getViewport({ scale });
             const context = canvas.getContext('2d');
-            canvas.width = viewport.width;
-            canvas.height = viewport.height;
-            page.render({ canvasContext: context, viewport: viewport }).promise;
+            canvas.width = scaledViewport.width;
+            canvas.height = scaledViewport.height;
+
+            page.render({ canvasContext: context, viewport: scaledViewport }).promise;
         });
-    }        
+    }
 </script>
 </body>
 </html>
