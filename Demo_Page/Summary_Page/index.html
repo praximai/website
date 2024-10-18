@@ -26,7 +26,7 @@
         <button onclick="logOut()">Log Out</button>
         <div class="chat-box" id="chat-box">
             <div class="chat-messages" id="chat-messages">
-                <p><strong>User:</strong> Hello!</p>
+                <p><strong>Praxim Agent:</strong> Hello!</p>
             </div>
             <div class="chat-input">
                 <input type="text" id="chat-input" placeholder="Send a message...">
@@ -69,7 +69,14 @@
                 newMessage.innerHTML = `<strong>You:</strong> ${message}`;
                 chatMessages.appendChild(newMessage);
                 input.value = '';
-                chatMessages.scrollTop = chatMessages.scrollHeight;
+                chatMessages.scrollTop = chatMessages.scrollHeight;                
+                generateText(mesage).then(result => {
+                    newMessage = document.createElement('p');
+                    newMessage.innerHTML = `<strong>Praxim:</strong> ${result}`;
+                    chatMessages.appendChild(newMessage);
+                    input.value = '';
+                    chatMessages.scrollTop = chatMessages.scrollHeight;                          
+                });
             }
         }
     </script>
@@ -99,21 +106,21 @@
 
         const fileCollection = collection(db, 'pdfFiles');
 
-        // Handle authentication
-        auth.onAuthStateChanged((user) => {
-            if (!user) {
-                window.location.href = "../";
-            }
-        });
+        // // Handle authentication
+        // auth.onAuthStateChanged((user) => {
+        //     if (!user) {
+        //         window.location.href = "../";
+        //     }
+        // });
 
-        // Logout function
-        window.logOut = function() {
-            auth.signOut().then(() => {
-                window.location.href = "../";
-            }).catch((error) => {
-                console.error("Error during logout", error);
-            });
-        };
+        // // Logout function
+        // window.logOut = function() {
+        //     auth.signOut().then(() => {
+        //         window.location.href = "../";
+        //     }).catch((error) => {
+        //         console.error("Error during logout", error);
+        //     });
+        // };
 
         // upload documents
         const pdfUpload = document.getElementById('fileUpload');
@@ -213,6 +220,34 @@
                 canvas.width = viewport.width;
                 canvas.height = viewport.height;
                 page.render({ canvasContext: context, viewport: viewport }).promise;
+            });
+        }
+
+        function generateText(inputs) {
+            return fetch(`https://us-central1-praximai-438817.cloudfunctions.net/get_request`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    action: 'generate_text',
+                    input_prompt: inputs,
+                }),
+                mode: 'cors'
+            })
+            .then(response => {
+                if (!response.ok) {
+                throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(json => {
+                const response_result = json.result;
+                console.log('API Response Result:', response_result);
+                return response_result;
+            })
+                .catch(error => {
+                    console.error('There has been a problem with your fetch operation:', error);
             });
         }
     </script>
