@@ -1,126 +1,330 @@
-<style>
-    .footer a[href*="github.com"] {
-        display: none;
-    }
-</style>
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PDF Upload</title>
-  <!-- Add Firebase scripts -->
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js"></script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="styles.css">
+    <title>Summarization Page</title>
 </head>
 <body>
-    <input type="file" id="fileUpload" accept=".pdf" style="display:none;" onchange="uploadPDF()">
-    <button onclick="document.getElementById('fileUpload').click();">Upload PDF</button>
-    <button onclick="logOut()">Log Out</button>
-    <h2>Uploaded Documents</h2>
-    <ul id="fileList"></ul>
+    <div class="file-menu">
+        <h4>Uploaded Files</h4>
+        <input type="file" id="fileUpload" accept=".pdf" style="display:none;">
+        <button onclick="document.getElementById('fileUpload').click();">Upload Here</button>
+        <ul id="file-menu"></ul>
+    </div>
 
-  <script>
-    // Firebase configuration
-    const firebaseConfig = {
-        apiKey: "AIzaSyBZvsBcAoIJLbQc4yINQz78oyCovB4RDTA",
-        authDomain: "praximai-438817.firebaseapp.com",
-        projectId: "praximai-438817",
-        storageBucket: "praximai-438817.appspot.com",
-        messagingSenderId: "274586621759",
-        appId: "1:274586621759:web:b9f20b3da3329327eba58a",
-        measurementId: "G-EQ7HTDC8T3"
-    };
+    <div class="left-panel" id="left-panel">
+        <div class="pdf-container" id="pdf-container">
+            <p>Select a PDF to preview it here.</p>
+        </div>
+    </div>
 
-    // Initialize Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const auth = firebase.auth();
-    const db = firebase.firestore();
-    const storage = firebase.storage();
+    <div class="center-bar" id="center-bar"></div>
 
-    // Handle authentication
-    firebase.auth().onAuthStateChanged((user) => {
-      if (!user) {
-        window.location.href = "../"; // Redirect to homepage or login page if not authenticated
-      }
-    });
+    <div class="right-panel">
+        <button onclick="logOut()">Log Out</button>
+        <div class="chat-box" id="chat-box">
+            <div class="chat-messages" id="chat-messages">
+                <p><strong>Praxim Agent:</strong> Hello!</p>
+            </div>
+            <div class="chat-input">
+                <input type="text" id="chat-input" placeholder="Send a message...">
+                <button onclick="sendMessage()">Send</button>
+            </div>
+        </div>
+    </div>
+    <ul id="generate-menu"></ul> <!-- PLACEHOLDER ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! -->
+    <div class="generate-container" id="generate-container">
+        <p>Select a PDF to preview it here.</p>
+    </div>  <!-- PLACEHOLDER ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! ! -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script>
+        const chatMessages = document.getElementById('chat-messages');
+        const centerBar = document.getElementById('center-bar');
+        const leftPanel = document.getElementById('left-panel');
+        const rightPanel = document.getElementById('right-panel');
+        let isDragging = false;
 
-    // Logout function
-    window.logOut = function() {
-      firebase.auth().signOut().then(() => {
-        window.location.href = "../"; // Redirect to homepage or login page after logout
-      }).catch((error) => {
-        console.error("Error during logout", error);
-      });
-    };
-
-    // PDF upload function
-    function uploadPDF() {
-      const fileInput = document.getElementById('fileUpload');
-      const file = fileInput.files[0];
-
-      if (!file) {
-        alert("No file selected!");
-        return;
-      }
-
-      const user = firebase.auth().currentUser;
-      if (user) {
-        const userId = user.uid;
-        const storageRef = storage.ref(`${userId}/${file.name}`);
-
-        // Upload the file
-        storageRef.put(file).then(snapshot => {
-          console.log('Uploaded a PDF file!');
-          alert('PDF uploaded successfully!');
-          listUserFiles(userId);
-        }).catch(error => {
-          console.error('Upload failed:', error);
+        centerBar.addEventListener('mousedown', () => {
+            isDragging = true;
+            document.body.style.cursor = 'col-resize';
         });
-      } else {
-        alert("User is not authenticated!");
-      }
-    }
-    function listUserFiles(userId) {
-      const storageRef = storage.ref(userId);
-      storageRef.listAll().then((res) => {
-        const fileList = document.getElementById('fileList');
-        fileList.innerHTML = ''; // Clear the list first
-        res.items.forEach((itemRef) => {
-          itemRef.getDownloadURL().then((url) => {
+
+        document.addEventListener('mousemove', (e) => {
+            if (!isDragging) return;
+            const leftWidth = (e.clientX / window.innerWidth) * 100;
+            leftPanel.style.width = `${leftWidth}%`;
+            rightPanel.style.width = `${100 - leftWidth}%`;
+        });
+
+        document.addEventListener('mouseup', () => {
+            isDragging = false;
+            document.body.style.cursor = 'default';
+        });
+
+
+        function generateText(inputs) {
+            return fetch(`https://us-central1-praximai-438817.cloudfunctions.net/get_request`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    action: 'generate_text',
+                    input_prompt: inputs,
+                }),
+                mode: 'cors'
+            })
+            .then(response => {
+                if (!response.ok) {
+                throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(json => {
+                const response_result = json.result;
+                console.log('API Response Result:', response_result);
+                return response_result;
+            })
+                .catch(error => {
+                    console.error('There has been a problem with your fetch operation:', error);
+            });
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            if (message) {
+                const newMessage = document.createElement('p');
+                newMessage.innerHTML = `<strong>You:</strong> ${message}`;
+                chatMessages.appendChild(newMessage);
+                input.value = '';
+                chatMessages.scrollTop = chatMessages.scrollHeight;                
+                generateText(message).then(result => {
+                    const nextMessage = document.createElement('p');
+                    nextMessage.innerHTML = `<strong>Praxim:</strong> ${result}`;
+                    chatMessages.appendChild(nextMessage);
+                    input.value = '';
+                    chatMessages.scrollTop = chatMessages.scrollHeight;                          
+                });
+            }
+        }
+    </script>
+    <script type="module">
+        // Import necessary Firebase functions
+        import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+        import { getAuth, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+        import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js';
+
+        // Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyBZvsBcAoIJLbQc4yINQz78oyCovB4RDTA",
+            authDomain: "praximai-438817.firebaseapp.com",
+            projectId: "praximai-438817",
+            storageBucket: "praximai-438817.appspot.com",
+            messagingSenderId: "274586621759",
+            appId: "1:274586621759:web:b9f20b3da3329327eba58a",
+            measurementId: "G-EQ7HTDC8T3"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+        const storage = getStorage(app);
+
+        const fileCollection = collection(db, 'pdfFiles');
+
+        // // Handle authentication
+        // auth.onAuthStateChanged((user) => {
+        //     if (!user) {
+        //         window.location.href = "../";
+        //     }
+        // });
+
+        // // Logout function
+        // window.logOut = function() {
+        //     auth.signOut().then(() => {
+        //         window.location.href = "../";
+        //     }).catch((error) => {
+        //         console.error("Error during logout", error);
+        //     });
+        // };
+
+        // upload documents
+        const pdfUpload = document.getElementById('fileUpload');
+        pdfUpload.addEventListener('change', async (event) => {
+            const file = event.target.files[0];
+            if (file && file.type === 'application/pdf') {
+                try {
+                    const user = auth.currentUser;
+                    if (!user) {
+                        alert('You must be logged in to upload files.');
+                        return;
+                    }
+                    const modifiedFileName = user.uid + '_' + file.name;
+                    const storageRef = ref(storage, 'documents/' + modifiedFileName);
+                    await uploadBytes(storageRef, file);
+                    const url = await getDownloadURL(storageRef);
+                    await addDoc(fileCollection, {
+                        name: file.name,
+                        storageName: modifiedFileName,
+                        url: url,
+                        uid: user.uid,
+                        isOriginal: true
+                    });
+                    console.log('Uploaded and added to Firestore:', file.name);
+                    listDocuments();
+                    listGenerateDocuments();
+                } catch (error) {
+                    console.error('Upload failed:', error);
+                }
+            } else {
+                alert('Please upload a PDF file.');
+            }
+        });
+        
+        // create ORIGINAL list
+        import { query, where, and} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+        const fileMenu = document.getElementById('file-menu');
+        async function listDocuments() {
+            const user = auth.currentUser;
+            if (!user) {
+                console.log('No user signed in.');
+                return;
+            }
+            
+            try {
+                fileMenu.innerHTML = '';
+                const q = query(fileCollection, and(
+                    where("uid", "==", user.uid),
+                    where("isOriginal", "==", true)
+                ));
+                const querySnapshot = await getDocs(q);
+                querySnapshot.forEach((docSnapshot) => {
+                    const fileData = docSnapshot.data();
+                    addToFileMenu(fileData.name, fileData.url);
+                });
+            } catch (error) {
+                console.error('Error listing documents:', error);
+            }
+        }
+        document.addEventListener('DOMContentLoaded', listDocuments);
+
+        // add to file menu
+        function addToFileMenu(fileName, fileUrl) {
             const li = document.createElement('li');
-            const a = document.createElement('a');
-            a.href = url;
-            a.textContent = itemRef.name;
-            a.target = '_blank';
+            li.textContent = fileName;
 
-            const deleteBtn = document.createElement('button');
-            deleteBtn.textContent = 'Delete';
-            deleteBtn.style.marginLeft = '10px';
-            deleteBtn.onclick = () => deleteFile(itemRef, userId);
+            li.addEventListener('click', () => displayPDF(fileName, fileUrl));
+            fileMenu.appendChild(li);
+        }
 
-            li.appendChild(a);
-            li.appendChild(deleteBtn);
-            fileList.appendChild(li);
-          });
-        });
-      }).catch((error) => {
-        console.error('Error listing files:', error);
-      });
-    }
+        // display the current original pdf
+        const pdfContainer = document.getElementById('pdf-container');
+        function displayPDF(fileName, fileUrl) {
+            fetch(fileUrl)
+                .then((response) => response.arrayBuffer())
+                .then((pdfData) => {
+                    pdfjsLib.getDocument({ data: pdfData }).promise.then((pdf) => {
+                        pdfContainer.innerHTML = ''; 
+                        for (let i = 1; i <= pdf.numPages; i++) {
+                            const canvas = document.createElement('canvas');
+                            canvas.style.display = 'block';
+                            canvas.style.margin = '10px auto';
+                            pdfContainer.appendChild(canvas);
+                            renderPage(pdf, i, canvas);
+                        }
+                    });
+                })
+                .catch((error) => {
+                    console.error('Error displaying PDF:', error);
+                });
+        }
+        // render original page
+        function renderPage(pdf, pageNumber, canvas) {
+            pdf.getPage(pageNumber).then((page) => {
+                const viewport = page.getViewport({
+                    scale: pdfContainer.clientWidth / page.getViewport({ scale: 1 }).width,
+                });
+                const context = canvas.getContext('2d');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                page.render({ canvasContext: context, viewport: viewport }).promise;
+            });
+        }
 
-    // Delete a file
-    function deleteFile(itemRef, userId) {
-      itemRef.delete().then(() => {
-        console.log(`${itemRef.name} deleted successfully`);
-        alert(`${itemRef.name} deleted.`);
-        listUserFiles(userId);  // Refresh file list after deletion
-      }).catch((error) => {
-        console.error('Error deleting file:', error);
-      });
-    }
-  </script>
+        // create GENERATE list
+        const generateMenu = document.getElementById('generate-menu');
+        async function listGenerateDocuments() {
+            const user = auth.currentUser;
+            if (!user) {
+                console.log('No user signed in.');
+                return;
+            }
+            
+            try {
+                fileMenu.innerHTML = '';
+                const q = query(fileCollection, and(
+                    where("uid", "==", user.uid),
+                    where("isOriginal", "==", false)
+                ));
+                const querySnapshot = await getDocs(q);
+                querySnapshot.forEach((docSnapshot) => {
+                    const fileData = docSnapshot.data();
+                    addToGenerateMenu(fileData.name, fileData.url);
+                });
+            } catch (error) {
+                console.error('Error listing documents:', error);
+            }
+        }
+        document.addEventListener('DOMContentLoaded', listGenerateDocuments);
+
+        // add to generate menu
+        function addToGenerateMenu(fileName, fileUrl) {
+            const li = document.createElement('li');
+            li.textContent = fileName;
+
+            li.addEventListener('click', () => displayGeneratedPDF(fileName, fileUrl));
+            generateMenu.appendChild(li);
+        }
+
+        // display the current generate pdf
+        const textContainer = document.getElementById('text-container');
+        function displayGeneratedPDF(fileName, fileUrl) {
+            fetch(fileUrl)
+                .then((response) => response.arrayBuffer())
+                .then((pdfData) => {
+                    pdfjsLib.getDocument({ data: pdfData }).promise.then((pdf) => {
+                        textContainer.innerHTML = ''; 
+                        for (let i = 1; i <= pdf.numPages; i++) {
+                            const canvas = document.createElement('canvas');
+                            canvas.style.display = 'block';
+                            canvas.style.margin = '10px auto';
+                            textContainer.appendChild(canvas);
+                            renderGeneratePage(pdf, i, canvas);
+                        }
+                    });
+                })
+                .catch((error) => {
+                    console.error('Error displaying PDF:', error);
+                });
+        }
+
+        // render generate page
+        function renderGeneratePage(pdf, pageNumber, canvas) {
+            pdf.getPage(pageNumber).then((page) => {
+                const viewport = page.getViewport({
+                    scale: textContainer.clientWidth / page.getViewport({ scale: 1 }).width,
+                });
+                const context = canvas.getContext('2d');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                page.render({ canvasContext: context, viewport: viewport }).promise;
+            });
+        }        
+    </script>
 </body>
 </html>

@@ -3,178 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
     <title>Summarization Page</title>
-    <style>
-        body {
-            margin: 0;
-            font-family: Arial, sans-serif;
-            height: 100vh;
-            display: flex;
-            overflow: hidden;
-        }
-
-        .file-menu {
-            background-color: #2e3b4e;
-            color: white;
-            overflow-y: auto;
-            display: flex;
-            flex-direction: column;
-            transition: width 0.3s;
-            width: 10%;
-            position: relative;
-        }
-
-        .hidden {
-            width: 30px;
-            overflow: hidden;
-        }
-
-        .file-menu-title {
-            background-color: #3a4a5e;
-            color: white;
-            border: none;
-            cursor: pointer;
-            padding: 10px;
-            text-align: left;
-            width: 100%;
-            font-weight: bold;
-        }
-
-        .file-menu-title:hover {
-            background-color: #4a5a6e;
-        }
-
-        .resize-bar {
-            width: 5px;
-            background-color: #ccc;
-            cursor: col-resize;
-            user-select: none;
-        }
-
-        .left-panel, .right-panel {
-            display: flex;
-            flex-direction: column;
-            padding: 10px;
-            overflow-y: auto;
-        }
-
-        .left-panel {
-            background-color: #f1f1f1;
-            flex-grow: 1;
-        }
-
-        .right-panel {
-            background-color: white;
-            flex-grow: 1;
-            position: relative;
-        }
-
-        .pdf-container {
-            flex: 1;
-            background-color: white;
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #ddd;
-        }
-
-        #logout-button {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            padding: 10px 20px;
-            background-color: #ff4c4c;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-
-        #logout-button:hover {
-            background-color: #e04343;
-        }
-        #accept-button {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            padding: 10px 20px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            z-index: 5; /* Ensure it stays on top */
-        }
-
-        #accept-button:hover {
-            background-color: #45a049;
-        }
-
-        .pdf-container {
-            position: relative; /* Needed to position the button inside */
-        }
-        .chat-overlay {
-            position: absolute;
-            top: 0;
-            right: 0;
-            width: 300px;
-            height: 90%;
-            background-color: rgba(0, 0, 0, 0.8);
-            color: white;
-            display: flex;
-            flex-direction: column;
-            padding: 10px;
-            box-shadow: -2px 0 5px rgba(0, 0, 0, 0.5);
-            transform: translateX(100%);
-            transition: transform 0.3s;
-            z-index: 10;
-        }
-
-        .chat-overlay.open {
-            transform: translateX(0);
-        }
-
-        .chat-header {
-            font-weight: bold;
-            margin-bottom: 10px;
-            display: flex;
-            justify-content: space-between;
-        }
-
-        .chat-messages {
-            flex: 1;
-            overflow-y: auto;
-            margin-bottom: 10px;
-            border: 1px solid #ddd;
-            padding: 10px;
-            background-color: #fff;
-            color: black;
-            border-radius: 5px;
-        }
-
-        .chat-input {
-            display: flex;
-        }
-
-        .chat-input input {
-            flex: 1;
-            padding: 10px;
-            border: none;
-            border-radius: 5px 0 0 5px;
-        }
-
-        .chat-input button {
-            padding: 10px;
-            border: none;
-            background-color: #4CAF50;
-            color: white;
-            cursor: pointer;
-            border-radius: 0 5px 5px 0;
-        }
-
-        .chat-input button:hover {
-            background-color: #45a049;
-        }
-    </style>
 </head>
 <body>
     <div class="file-menu" id="uploaded-files-menu">
@@ -202,7 +32,7 @@
     </div>
 
     <div class="right-panel" id="right-panel">
-        <div class="pdf-container" id="pdf-container1">
+        <div class="pdf-container" id="text-container">
             <button id="accept-button" onclick="">Accept Output</button>
             <p>Document Viewer</p>
         </div>
@@ -222,7 +52,7 @@
             </div>
         </div>
     </div>
-
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <script>
         function toggleMenu(menuId) {
             const menu = document.getElementById(menuId);
@@ -242,20 +72,54 @@
                 }
             }
         });
+        const chatMessages = document.getElementById('chat-messages');
+        function generateText(inputs) {
+            return fetch(`https://us-central1-praximai-438817.cloudfunctions.net/get_request`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    action: 'generate_text',
+                    input_prompt: inputs,
+                }),
+                mode: 'cors'
+            })
+            .then(response => {
+                if (!response.ok) {
+                throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(json => {
+                const response_result = json.result;
+                console.log('API Response Result:', response_result);
+                return response_result;
+            })
+                .catch(error => {
+                    console.error('There has been a problem with your fetch operation:', error);
+            });
+        }
 
         function sendMessage() {
-            const chatInput = document.getElementById('chat-input');
-            const chatMessages = document.getElementById('chat-messages');
-            const message = chatInput.value.trim();
-            
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
             if (message) {
-                const newMessage = document.createElement('div');
-                newMessage.textContent = `You: ${message}`;
+                const newMessage = document.createElement('p');
+                newMessage.innerHTML = `<strong>You:</strong> ${message}`;
                 chatMessages.appendChild(newMessage);
-                chatMessages.scrollTop = chatMessages.scrollHeight;
-                chatInput.value = '';
+                input.value = '';
+                chatMessages.scrollTop = chatMessages.scrollHeight;                
+                generateText(message).then(result => {
+                    const nextMessage = document.createElement('p');
+                    nextMessage.innerHTML = `<strong>Praxim:</strong> ${result}`;
+                    chatMessages.appendChild(nextMessage);
+                    input.value = '';
+                    chatMessages.scrollTop = chatMessages.scrollHeight;                          
+                });
             }
         }
+
         document.getElementById('chat-input').addEventListener('keydown', function (event) {
             if (event.key === 'Enter') {
                 sendMessage();
@@ -297,10 +161,221 @@
             document.addEventListener('mousemove', onMouseMove);
             document.addEventListener('mouseup', onMouseUp);
         });
-
-        function logOut() {
-            console.log('Logged out');
-        }
     </script>
+<script type="module">
+    // Import necessary Firebase functions
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
+    import { getAuth, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+    import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js';
+
+    // Firebase configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyBZvsBcAoIJLbQc4yINQz78oyCovB4RDTA",
+        authDomain: "praximai-438817.firebaseapp.com",
+        projectId: "praximai-438817",
+        storageBucket: "praximai-438817.appspot.com",
+        messagingSenderId: "274586621759",
+        appId: "1:274586621759:web:b9f20b3da3329327eba58a",
+        measurementId: "G-EQ7HTDC8T3"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const storage = getStorage(app);
+
+    const fileCollection = collection(db, 'pdfFiles');
+
+    // Handle authentication
+    auth.onAuthStateChanged((user) => {
+        if (!user) {
+            window.location.href = "../";
+        }
+    });
+
+    // Logout function
+    window.logOut = function() {
+        auth.signOut().then(() => {
+            window.location.href = "../";
+        }).catch((error) => {
+            console.error("Error during logout", error);
+        });
+    };
+
+    // upload documents
+    const pdfUpload = document.getElementById('fileUpload');
+    pdfUpload.addEventListener('change', async (event) => {
+        const file = event.target.files[0];
+        if (file && file.type === 'application/pdf') {
+            try {
+                const user = auth.currentUser;
+                if (!user) {
+                    alert('You must be logged in to upload files.');
+                    return;
+                }
+                const modifiedFileName = user.uid + '_' + file.name;
+                const storageRef = ref(storage, 'documents/' + modifiedFileName);
+                await uploadBytes(storageRef, file);
+                const url = await getDownloadURL(storageRef);
+                await addDoc(fileCollection, {
+                    name: file.name,
+                    storageName: modifiedFileName,
+                    url: url,
+                    uid: user.uid,
+                    isOriginal: true
+                });
+                console.log('Uploaded and added to Firestore:', file.name);
+                listDocuments();
+                listGenerateDocuments();
+            } catch (error) {
+                console.error('Upload failed:', error);
+            }
+        } else {
+            alert('Please upload a PDF file.');
+        }
+    });
+    
+    // create ORIGINAL list
+    import { query, where, and} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+    const fileMenu = document.getElementById('file-menu');
+    async function listDocuments() {
+        const user = auth.currentUser;
+        if (!user) {
+            console.log('No user signed in.');
+            return;
+        }
+        
+        try {
+            fileMenu.innerHTML = '';
+            const q = query(fileCollection, and(
+                where("uid", "==", user.uid),
+                where("isOriginal", "==", true)
+            ));
+            const querySnapshot = await getDocs(q);
+            querySnapshot.forEach((docSnapshot) => {
+                const fileData = docSnapshot.data();
+                addToFileMenu(fileData.name, fileData.url);
+            });
+        } catch (error) {
+            console.error('Error listing documents:', error);
+        }
+    }
+    document.addEventListener('DOMContentLoaded', listDocuments);
+
+    // add to file menu
+    function addToFileMenu(fileName, fileUrl) {
+        const li = document.createElement('li');
+        li.textContent = fileName;
+
+        li.addEventListener('click', () => displayPDF(fileName, fileUrl));
+        fileMenu.appendChild(li);
+    }
+
+    // display the current original pdf
+    const pdfContainer = document.getElementById('pdf-container');
+    function displayPDF(fileName, fileUrl) {
+        fetch(fileUrl)
+            .then((response) => response.arrayBuffer())
+            .then((pdfData) => {
+                pdfjsLib.getDocument({ data: pdfData }).promise.then((pdf) => {
+                    pdfContainer.innerHTML = ''; 
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        const canvas = document.createElement('canvas');
+                        canvas.style.display = 'block';
+                        canvas.style.margin = '10px auto';
+                        pdfContainer.appendChild(canvas);
+                        renderPage(pdf, i, canvas);
+                    }
+                });
+            })
+            .catch((error) => {
+                console.error('Error displaying PDF:', error);
+            });
+    }
+    // render original page
+    function renderPage(pdf, pageNumber, canvas) {
+        pdf.getPage(pageNumber).then((page) => {
+            const viewport = page.getViewport({
+                scale: pdfContainer.clientWidth / page.getViewport({ scale: 1 }).width,
+            });
+            const context = canvas.getContext('2d');
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+            page.render({ canvasContext: context, viewport: viewport }).promise;
+        });
+    }
+
+    // create GENERATE list
+    const generateMenu = document.getElementById('generated-file-list');
+    async function listGenerateDocuments() {
+        const user = auth.currentUser;
+        if (!user) {
+            console.log('No user signed in.');
+            return;
+        }
+        
+        try {
+            fileMenu.innerHTML = '';
+            const q = query(fileCollection, and(
+                where("uid", "==", user.uid),
+                where("isOriginal", "==", false)
+            ));
+            const querySnapshot = await getDocs(q);
+            querySnapshot.forEach((docSnapshot) => {
+                const fileData = docSnapshot.data();
+                addToGenerateMenu(fileData.name, fileData.url);
+            });
+        } catch (error) {
+            console.error('Error listing documents:', error);
+        }
+    }
+    document.addEventListener('DOMContentLoaded', listGenerateDocuments);
+
+    // add to generate menu
+    function addToGenerateMenu(fileName, fileUrl) {
+        const li = document.createElement('li');
+        li.textContent = fileName;
+
+        li.addEventListener('click', () => displayGeneratedPDF(fileName, fileUrl));
+        generateMenu.appendChild(li);
+    }
+
+    // display the current generate pdf
+    const textContainer = document.getElementById('text-container');
+    function displayGeneratedPDF(fileName, fileUrl) {
+        fetch(fileUrl)
+            .then((response) => response.arrayBuffer())
+            .then((pdfData) => {
+                pdfjsLib.getDocument({ data: pdfData }).promise.then((pdf) => {
+                    textContainer.innerHTML = ''; 
+                    for (let i = 1; i <= pdf.numPages; i++) {
+                        const canvas = document.createElement('canvas');
+                        canvas.style.display = 'block';
+                        canvas.style.margin = '10px auto';
+                        textContainer.appendChild(canvas);
+                        renderGeneratePage(pdf, i, canvas);
+                    }
+                });
+            })
+            .catch((error) => {
+                console.error('Error displaying PDF:', error);
+            });
+    }
+
+    // render generate page
+    function renderGeneratePage(pdf, pageNumber, canvas) {
+        pdf.getPage(pageNumber).then((page) => {
+            const viewport = page.getViewport({
+                scale: textContainer.clientWidth / page.getViewport({ scale: 1 }).width,
+            });
+            const context = canvas.getContext('2d');
+            canvas.width = viewport.width;
+            canvas.height = viewport.height;
+            page.render({ canvasContext: context, viewport: viewport }).promise;
+        });
+    }        
+</script>
 </body>
 </html>
