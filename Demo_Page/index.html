@@ -300,6 +300,12 @@
                 return;
             }
             uploadRAG(selectedFiles);
+            // Clear the global selected files list
+            selectedFiles = [];
+
+            // Uncheck all checkboxes
+            const checkboxes = document.querySelectorAll('#uploaded-file-list input[type="checkbox"]');
+            checkboxes.forEach(checkbox => checkbox.checked = false);
         }
         
         document.getElementById('synthesize-button').addEventListener('click', synthesizeDocuments);
