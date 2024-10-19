@@ -121,8 +121,6 @@
             // Mark the chat as initialized
             chatInitialized = true;
         }
-
-        window.initializeChat=initializeChat();
         // Modified toggleChat function to trigger chat initialization
         function toggleChat() {
             const chatOverlay = document.getElementById('chat-overlay');
@@ -742,7 +740,7 @@
             });
             return generateRAG(allFiles);
         }
-
+        window.getGeneratedText = getGeneratedText();
         // call summarize function to create generated text
         function generateSummary(fileUrl) {
             return fetch(`https://us-central1-praximai-438817.cloudfunctions.net/get_request`, {
