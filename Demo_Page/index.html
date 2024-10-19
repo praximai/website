@@ -472,17 +472,14 @@
             });
             try {
                 const summaryText = await generateRAG(fileUrlList);
+                console.log("GOT HERE!!!!!")
                 const user = auth.currentUser;
                 if (!user) {
                     alert('You must be logged in to upload files.');
                     return;
                 }
-                const q = query(
-                    fileCollection,
-                    where("uid", "==", user.uid),
-                    where("name", ">=", "RAG_summary"), 
-                    where("name", "<", "RAG_summary\uf8ff")
-                );
+                const q = query(fileCollection, where('uid', '==', user.uid), where('name', '>=', 'RAG_summary'), where('name', '<', 'RAG_summary' + '\uf8ff'));
+
                 const querySnapshot = await getDocs(q);
                 const count = querySnapshot.size;
 
