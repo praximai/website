@@ -717,10 +717,7 @@
             const querySnapshot = await getDocs(q);
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
-                allFiles.push({
-                    name: data.name,
-                    url: data.url
-                });
+                allFiles.push(data.url);
             });
             return generateRAG(allFiles);
         }
