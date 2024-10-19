@@ -278,7 +278,6 @@
         import { query, where, and} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
         const fileMenu = document.getElementById('uploaded-file-list');
         async function listDocuments() {
-            console.log("listDocuments");
             const user = auth.currentUser;
             if (!user) {
                 console.log('No user signed in.');
@@ -343,7 +342,6 @@
         document.getElementById('synthesize-button').addEventListener('click', synthesizeDocuments);
         // create GENERATE list
         async function listGenerateDocuments() {
-            console.log("listGenerateDocuments");
             const user = auth.currentUser;
             if (!user) {
                 console.log('No user signed in.');
@@ -422,34 +420,33 @@
         // Render individual pages only once
         function renderPage(pdf, pageNumber, canvas) {
             pdf.getPage(pageNumber).then((page) => {
-                const viewport = page.getViewport({ scale: 1 }); // Initial scale
-
-                // Set canvas dimensions to match the PDF page size
-                canvas.width = viewport.width;
-                canvas.height = viewport.height;
-
+                const initialViewport = page.getViewport({ scale: 2 });
                 const context = canvas.getContext('2d');
 
-                // Render the PDF page onto the canvas
-                page.render({ canvasContext: context, viewport: viewport }).promise.then(() => {
+                // Set canvas size based on the initial viewport
+                canvas.width = initialViewport.width;
+                canvas.height = initialViewport.height;
+
+                // Render the page content onto the canvas
+                page.render({ canvasContext: context, viewport: initialViewport }).promise.then(() => {
                     console.log(`Rendered page ${pageNumber}`);
-                    rescaleCanvas(canvas, viewport); // Rescale if needed
+                    // Scale the canvas to fit the container initially
+                    rescaleCanvas(canvas, initialViewport);
                 });
             }).catch((error) => {
                 console.error(`Error rendering page ${pageNumber}:`, error);
             });
         }
 
+        // Rescale canvas on resize
         function rescaleCanvas(canvas, viewport) {
-            const containerWidth = pdfContainer.clientWidth; // Get container width
-            const scale = Math.min(containerWidth / viewport.width, 1); // Max scale of 1
+            const containerWidth = pdfContainer.clientWidth;  // Get current container width
+            const scale = 0.94 * containerWidth / viewport.width;  // Calculate the new scale
 
-            // Apply scaled dimensions using CSS, keeping it responsive
+            // Apply scaled dimensions using CSS (without affecting the internal canvas resolution)
             canvas.style.width = `${viewport.width * scale}px`;
             canvas.style.height = `${viewport.height * scale}px`;
         }
-
-
 
         // Listen for resize events and rescale the canvases
         const resizeObserver = new ResizeObserver(() => {
