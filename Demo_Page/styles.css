@@ -100,23 +100,6 @@ canvas {
 #logout-button:hover {
     background-color: #e04343;
 }
-#accept-button {
-    position: absolute;
-    top: 10px;
-    left: 10px;
-    padding: 10px 20px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    z-index: 5; /* Ensure it stays on top */
-}
-
-#accept-button:hover {
-    background-color: #45a049;
-}
-
 .pdf-container {
     position: relative; /* Needed to position the button inside */
 }
@@ -206,24 +189,6 @@ canvas {
     background-color: #068f1f; 
 }
 
-#uploaded-file-list li {
-    background-color: #83e074; 
-    color: white; 
-    padding: 10px; 
-    margin: 5px 0;
-    border-radius: 5px; 
-    cursor: pointer; 
-    transition: background-color 0.3s ease; 
-    display: flex; 
-    align-items: center; 
-    justify-content: space-between;
-    font-size: 12px;
-}
-
-#uploaded-file-list li input[type="checkbox"] {
-    margin-left: auto; /* Push the checkbox to the far right */
-}
-
 #generated-file-list {
     list-style-type: none; 
     padding: 0; 
@@ -245,4 +210,23 @@ canvas {
 
 #generated-file-list li:hover {
     background-color: #068f1f; 
+}
+
+.accept-output-button {
+    width: 100%; /* Full width */
+    padding: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 0 0 5px 5px; /* Bottom corners rounded */
+    cursor: pointer;
+    text-align: center;
+}
+
+.accept-output-button:hover {
+    background-color: #45a049;
+}
+
+#generated-file-list li input[type="checkbox"] {
+    margin-left: auto; /* Align the checkbox to the right */
 }

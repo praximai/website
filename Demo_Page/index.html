@@ -30,13 +30,13 @@
             Generated Files
         </button>
         <ul id="generated-file-list"></ul>
+        <button id="accept-output-button" class="accept-output-button">Accept Output</button>
     </div>
 
     <div class="right-panel" id="right-panel">
         <div class="pdf-container" id="text-container">
             <p>Document Viewer</p>
         </div>
-        <button id="accept-button" onclick="">Accept Output</button>
         <button id="logout-button" onclick="logOut()">Log Out</button>
         <button style="position: absolute; bottom: 10px; right: 10px;" 
                 onclick="toggleChat()">Chat</button>
@@ -333,14 +333,56 @@
             }
         }
         // add to generate menu
+        let selectedGeneratedFiles = [];
         const generateMenu = document.getElementById('generated-file-list');
         function addToGenerateMenu(fileName, fileUrl) {
             const gen_li = document.createElement('li');
             gen_li.textContent = fileName;
 
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.style.marginLeft = '10px'; // Spacing
+
+            checkbox.addEventListener('change', () => {
+                if (checkbox.checked) {
+                    selectedGeneratedFiles.push({ name: fileName, url: fileUrl });
+                } else {
+                    selectedGeneratedFiles = selectedGeneratedFiles.filter(file => file.url !== fileUrl);
+                }
+            });
+
+            gen_li.appendChild(checkbox);
             gen_li.addEventListener('click', () => displayGeneratedText(fileName, fileUrl));
             generateMenu.appendChild(gen_li);
         }
+        function acceptOutput() {
+            if (selectedGeneratedFiles.length === 0) {
+                alert('No files selected to accept.');
+                return;
+            }
+
+            // Add selected generated files to the uploaded files list
+            selectedGeneratedFiles.forEach(file => {
+                addToFileMenu(file.name, file.url);
+            });
+
+            // Remove selected files from the generated files list
+            selectedGeneratedFiles.forEach(file => {
+                const li = Array.from(generateMenu.children).find(
+                    item => item.textContent.trim() === file.name
+                );
+                if (li) generateMenu.removeChild(li);
+            });
+
+            // Clear the selected generated files list
+            selectedGeneratedFiles = [];
+
+            // Uncheck all checkboxes in the generated files list
+            const checkboxes = document.querySelectorAll('#generated-file-list input[type="checkbox"]');
+            checkboxes.forEach(checkbox => checkbox.checked = false);
+        }
+        document.getElementById('accept-output-button').addEventListener('click', acceptOutput);
+
                 // display the current original pdf
         const pdfContainer = document.getElementById('pdf-container');
         let currentPdf = null;  // Store the currently loaded PDF
