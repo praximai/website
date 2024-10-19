@@ -166,7 +166,7 @@
         // Import necessary Firebase functions
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
         import { getAuth, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
-        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, setDoc, doc } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
         import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js';
 
         // Firebase configuration
@@ -468,7 +468,7 @@
                 },
                 body: JSON.stringify({
                     action: 'generate_rag',
-                    input_prompt: fileUrlList,
+                    input_list: fileUrlList,
                 }),
                 mode: 'cors'
             })
