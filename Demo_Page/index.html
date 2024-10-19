@@ -101,18 +101,20 @@
         let fileHistory = "";
         let chatInitialized = false;  // Track whether the chat has been initialized
         function initializeChat() {
+            const chatMessages = document.getElementById('chat-messages');
             const nextMessage = document.createElement('p');
             botMessage = "Praxim is loading your documents...";
             nextMessage.innerHTML = `<strong>Praxim:</strong> ${botMessage}`;
+            chatMessages.appendChild(nextMessage);
             fileHistory = window.getGeneratedText();
             botMessage = "Loading complete";
             nextMessage.innerHTML = `<strong>Praxim:</strong> ${botMessage}`;
+            chatMessages.appendChild(nextMessage);
             botMessage = "Hi, I'm Praxim! How can I help you with this case?";
             // Create a new paragraph element for the bot's message
             nextMessage.innerHTML = `<strong>Praxim:</strong> ${botMessage}`;
 
             // Append the message to the chat-messages container
-            const chatMessages = document.getElementById('chat-messages');
             chatMessages.appendChild(nextMessage);
 
             // Scroll to the bottom of the chat
