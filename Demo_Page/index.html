@@ -593,7 +593,7 @@
                         const text = await response.text();
                         const { jsPDF } = window.jspdf;
                         const newdoc = new jsPDF();
-                        newdoc.text(text, 10, 10);
+                        newdoc.text(text, 10, 20);
                         const pdfBlob = newdoc.output('blob');
                         const storageRef = ref(storage, 'texts/' + fileData.storageName);
                         await deleteObject(storageRef);
