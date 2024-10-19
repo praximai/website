@@ -594,7 +594,7 @@
         async function moveGenerated(selectedGeneratedFiles){
             let fileNameList = [];
             let fileUrlList = [];
-            selectedFiles.forEach(file => {
+            selectedGeneratedFiles.forEach(file => {
                 fileNameList.push(file.name);
                 fileUrlList.push(file.url);
             });
