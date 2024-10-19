@@ -87,8 +87,8 @@ canvas {
 
 #logout-button {
     position: fixed; /* Make it fixed to the viewport */
-    top: 10px;
-    right: 10px;
+    bottom: 10px;
+    left: 10px;
     z-index: 100; /* Ensure it stays above other elements */
 }
 
