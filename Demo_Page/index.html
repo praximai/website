@@ -334,13 +334,28 @@
         }
         // add to generate menu
         const generateMenu = document.getElementById('generated-file-list');
+        let selectedGeneratedFiles = [];
         function addToGenerateMenu(fileName, fileUrl) {
             const gen_li = document.createElement('li');
             gen_li.textContent = fileName;
 
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.style.marginLeft = '10px'; // Spacing
+
+            checkbox.addEventListener('change', () => {
+                if (checkbox.checked) {
+                    selectedGeneratedFiles.push({ name: fileName, url: fileUrl });
+                } else {
+                    selectedGeneratedFiles = selectedGeneratedFiles.filter(file => file.url !== fileUrl);
+                }
+            });
+
+            gen_li.appendChild(checkbox);
             gen_li.addEventListener('click', () => displayGeneratedText(fileName, fileUrl));
             generateMenu.appendChild(gen_li);
         }
+        document.getElementById('accept-output-button').addEventListener('click', acceptOutput);
                 // display the current original pdf
         const pdfContainer = document.getElementById('pdf-container');
         let currentPdf = null;  // Store the currently loaded PDF
