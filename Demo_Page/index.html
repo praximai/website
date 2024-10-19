@@ -773,6 +773,9 @@
 
         // call RAG function to create RAG generated text
         function generateRAG(fileUrlList) {
+            if (fileUrlList.length === 0) {
+                return "";
+            }
             return fetch(`https://us-central1-praximai-438817.cloudfunctions.net/get_request`, {
                 method: 'POST',
                 headers: {
