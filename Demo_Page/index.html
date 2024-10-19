@@ -193,6 +193,7 @@
         });
     </script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script type="module">
         // Import necessary Firebase functions
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
@@ -462,19 +463,19 @@
 
         function displayGeneratedText(fileName, fileUrl) {
             fetch(fileUrl)
-                .then((response) => {
+                .then(response => {
                     if (!response.ok) {
-                        console.log(fileUrl)
+                        console.log(fileUrl);
                         throw new Error('Failed to fetch the text file');
                     }
                     return response.text(); 
                 })
-                .then((text) => {
-                    textContainer.innerHTML = ''; 
-                    const preElement = document.createElement('pre');
-                    preElement.style.whiteSpace = 'pre-wrap';
-                    preElement.textContent = text;
-                    textContainer.appendChild(preElement);
+                .then((markdownText) => {
+                    // Convert Markdown to HTML using marked.js
+                    const formattedHTML = marked.parse(markdownText);
+
+                    // Display the formatted HTML inside the text container
+                    textContainer.innerHTML = formattedHTML;
                 })
                 .catch((error) => {
                     console.error('Error displaying text file:', error);
