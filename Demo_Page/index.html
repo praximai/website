@@ -595,12 +595,26 @@
                     return;
                 }
                 const q = query(fileCollection, where('uid', '==', user.uid), where('name', '>=', 'RAG_summary'), where('name', '<', 'RAG_summary' + '\uf8ff'));
-
+                let numbers = [];
                 const querySnapshot = await getDocs(q);
-                let count = 0;
                 querySnapshot.forEach((docSnapshot) => {
-                    count += 1;
+                    const name = docSnapshot.data().name;
+                    const match = name.match(/^RAG_summary_(\d+)$/);
+                    if (match) {
+                        numbers.push(parseInt(match[1], 10));
+                    }
                 });
+                numbers.sort((a, b) => a - b);
+                let count = -1;
+                for (let i = 0; i < numbers.length; i++) {
+                    if (numbers[i] !== i) {
+                        count = i;
+                        break;
+                    }
+                }
+                if (count === -1) {
+                    count = numbers.length;
+                }
 
                 const textBlob = new Blob([summaryText], { type: 'text/plain' });
                 const combinedNames = fileNameList.join('_');
@@ -723,10 +737,7 @@
             const querySnapshot = await getDocs(q);
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
-                allFiles.push({
-                    name: data.name,
-                    url: data.url
-                });
+                allFiles.push(data.url);
             });
             return generateRAG(allFiles);
         }
