@@ -461,6 +461,11 @@
 
         // Load text into the editor
         async function displayGeneratedText(fileName, fileUrl) {
+            const user = auth.currentUser;
+            if (!user) {
+                alert('You must be logged in to upload files.');
+                return;
+            }
             const q = query(fileCollection, and(
                 where("uid", "==", user.uid),
                 where("name", "==", fileName)
