@@ -500,7 +500,7 @@
                 const fileData = docSnapshot.data();
 
                 // Step 2: Overwrite the file in Firebase Storage
-                const storageRef = ref(storage, 'documents/' + fileData.storageName);
+                const storageRef = ref(storage, 'texts/' + fileData.storageName);
                 const textBlob = new Blob([editedText], { type: 'text/plain' });
                 await uploadBytes(storageRef, textBlob);
 
