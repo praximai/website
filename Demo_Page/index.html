@@ -101,8 +101,12 @@
         let fileHistory = "";
         let chatInitialized = false;  // Track whether the chat has been initialized
         function initializeChat() {
+            botMessage = "Praxim is loading your documents...";
+            nextMessage.innerHTML = `<strong>Praxim:</strong> ${botMessage}`;
             fileHistory = getGeneratedText();
-            const botMessage = "Hi, I'm Praxim! How can I help you with this case?";
+            botMessage = "Loading complete";
+            nextMessage.innerHTML = `<strong>Praxim:</strong> ${botMessage}`;
+            botMessage = "Hi, I'm Praxim! How can I help you with this case?";
             // Create a new paragraph element for the bot's message
             const nextMessage = document.createElement('p');
             nextMessage.innerHTML = `<strong>Praxim:</strong> ${botMessage}`;
@@ -228,6 +232,8 @@
                 window.location.href = "../";
             }
             else {
+                initializeChat();
+                chatInitialized=true;
                 listDocuments();
                 listGenerateDocuments();
             }
