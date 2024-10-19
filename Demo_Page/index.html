@@ -103,11 +103,22 @@
         // Function to initialize the chat with the first message (without displaying it)
         function initializeChat() {
             const botMessage = "Hi, I'm Praxim! How can I help you with this case?";
+
+            // Create a new paragraph element for the bot's message
             const nextMessage = document.createElement('p');
             nextMessage.innerHTML = `<strong>Praxim:</strong> ${botMessage}`;
+
+            // Append the message to the chat-messages container
+            const chatMessages = document.getElementById('chat-messages');
+            chatMessages.appendChild(nextMessage);
+
+            // Scroll to the bottom of the chat
             chatMessages.scrollTop = chatMessages.scrollHeight;
-            chatInitialized = true;  
+
+            // Mark the chat as initialized
+            chatInitialized = true;
         }
+        
         // Modified toggleChat function to trigger chat initialization
         function toggleChat() {
             const chatOverlay = document.getElementById('chat-overlay');
