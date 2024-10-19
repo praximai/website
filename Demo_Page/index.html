@@ -740,7 +740,7 @@
             });
             return generateRAG(allFiles);
         }
-        window.getGeneratedText = getGeneratedText();
+        window.getGeneratedText = getGeneratedText;
         // call summarize function to create generated text
         function generateSummary(fileUrl) {
             return fetch(`https://us-central1-praximai-438817.cloudfunctions.net/get_request`, {
