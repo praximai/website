@@ -153,7 +153,7 @@
                 // Clear input field and scroll to the bottom
                 input.value = '';
                 chatMessages.scrollTop = chatMessages.scrollHeight;
-                totalHistory = "What follows are documents related to insurance that I will query.\n \n + fileHistory + "\nWhat follows now is our past conversations. \n \n" + conversationHistory;
+                totalHistory = "What follows are documents related to insurance that I will query.\n \n" + fileHistory + "\n What follows now is our past conversations. \n \n" + conversationHistory;
                 console.log(totalHistory);
                 generateText(totalHistory).then(result => {
                     conversationHistory += `YOU: ${result}\n`;
