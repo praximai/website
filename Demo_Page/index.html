@@ -747,7 +747,8 @@
                 return;
             }
             let allFiles = [];
-            const q = query(fileCollection, where("uid", "==", user.uid));
+            const q = query(fileCollection, where("uid", "==", user.uid),
+            where("isOriginal", "==", true));
             const querySnapshot = await getDocs(q);
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
