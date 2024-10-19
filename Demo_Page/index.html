@@ -272,21 +272,43 @@
                         alert('You must be logged in to upload files.');
                         return;
                     }
+
                     const modifiedFileName = user.uid + '_' + file.name;
                     const storageRef = ref(storage, 'documents/' + modifiedFileName);
+
+                    // Upload the file to Firebase storage
                     await uploadBytes(storageRef, file);
-                    const url = await getDownloadURL(storageRef);
-                    await addDoc(fileCollection, {
-                        name: file.name,
-                        storageName: modifiedFileName,
-                        url: url,
-                        uid: user.uid,
-                        isOriginal: true
-                    });
-                    console.log('Uploaded and added to Firestore:', file.name);
+                    const newUrl = await getDownloadURL(storageRef);
+
+                    // Check if the file already exists in Firestore
+                    const q = query(fileCollection, and(
+                        where("uid", "==", user.uid),
+                        where("name", "==", file.name)
+                    ));
+                    const querySnapshot = await getDocs(q);
+
+                    if (querySnapshot.empty) {
+                        // If the document doesn't exist, add it as a new entry
+                        await addDoc(fileCollection, {
+                            name: file.name,
+                            storageName: modifiedFileName,
+                            url: newUrl,
+                            uid: user.uid,
+                            isOriginal: true
+                        });
+                        console.log('Uploaded and added to Firestore:', file.name);
+                    } else {
+                        // If the document exists, update the URL to the new one
+                        const docRef = querySnapshot.docs[0].ref;
+                        await updateDoc(docRef, { url: newUrl });
+                        console.log('Document URL updated in Firestore:', file.name);
+                    }
+
+                    // Refresh the document lists
                     fileHistory = getGeneratedText();
                     listDocuments();
                     listGenerateDocuments();
+
                 } catch (error) {
                     console.error('Upload failed:', error);
                 }
