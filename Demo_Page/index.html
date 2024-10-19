@@ -264,7 +264,7 @@
                     });
                     console.log('Uploaded and added to Firestore:', file.name);
                     listDocuments();
-                    await uploadGeneration(file.name, url);
+                    // await uploadGeneration(file.name, url);
                     listGenerateDocuments();
                 } catch (error) {
                     console.error('Upload failed:', error);
