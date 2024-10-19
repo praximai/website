@@ -749,7 +749,10 @@
                 const data = doc.data();
                 allFiles.push(data.url);
             });
-            return generateRAG(allFiles);
+            console.log("allFiles");
+            const output = generateRAG(allFiles);
+            console.log(output);
+            return output;
         }
         window.getGeneratedText = getGeneratedText;
         // call summarize function to create generated text
