@@ -471,7 +471,6 @@
                 fileUrlList.push(file.url);
             });
             try {
-                console.log(fileUrlList);
                 const summaryText = await generateRAG(fileUrlList);
 
                 const user = auth.currentUser;
