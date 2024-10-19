@@ -461,20 +461,6 @@
 
         // Load text into the editor
         async function displayGeneratedText(fileName, fileUrl) {
-            const user = auth.currentUser;
-            if (!user) {
-                alert('You must be logged in to upload files.');
-                return;
-            }
-            const q = query(fileCollection, and(
-                where("uid", "==", user.uid),
-                where("name", "==", fileName)
-            ));
-            const querySnapshot = await getDocs(q);
-            querySnapshot.forEach((docSnapshot) => {
-                const fileData = docSnapshot.data();
-                fileUrl = fileData.url;
-            });
             fetch(fileUrl)
             .then(response => response.text())
             .then((text) => {
@@ -521,11 +507,8 @@
                 // Step 3: Get the new URL for the uploaded file
                 const newUrl = await getDownloadURL(storageRef);
 
-                // Step 4: Update Firestore metadata with the new URL and mark as original
-                await updateDoc(docSnapshot.ref, { 
-                    url: newUrl, 
-                    isOriginal: true  // Ensure the file stays in the uploaded list
-                });
+                // Step 4: Update Firestore metadata without changing 'isOriginal'
+                await updateDoc(docSnapshot.ref, { url: newUrl });
 
                 alert('Document saved successfully!');
 
