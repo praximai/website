@@ -559,86 +559,59 @@
                 alert('No files selected to accept.');
                 return;
             }
-
-            try {
-                await moveGenerated(selectedGeneratedFiles); // Move files on the backend
-
-                // Update the frontend lists without reloading the page
-                selectedGeneratedFiles.forEach((file) => {
-                    removeFromGenerateMenu(file.name); // Remove from generated list
-                    addToFileMenu(file.name, file.url); // Add to uploaded list
-                });
-
-                // Clear the selected files array
-                selectedGeneratedFiles = [];
-            } catch (error) {
-                console.error('Error moving files:', error);
-            }
-        }
-
-        function removeFromGenerateMenu(fileName) {
-            const generateMenu = document.getElementById('generated-file-list');
-            const items = Array.from(generateMenu.children);
-
-            items.forEach((item) => {
-                if (item.textContent.trim() === fileName) {
-                    generateMenu.removeChild(item); // Remove the item from the generated list
-                }
-            });
+            await moveGenerated(selectedGeneratedFiles)
+            await moveGenerated(selectedGeneratedFiles);
+            selectedGeneratedFiles = [];
+            listDocuments();
+            listGenerateDocuments();
+            moveGenerated();
         }
 
         // replaces generated text with pdf and moves to upload files
-        async function moveGenerated(selectedGeneratedFiles) {
+        async function moveGenerated(selectedGeneratedFiles){
+            let fileNameList = [];
+            let fileUrlList = [];
+            selectedGeneratedFiles.forEach(file => {
+                fileNameList.push(file.name);
+                fileUrlList.push(file.url);
+            });
             try {
                 const user = auth.currentUser;
                 if (!user) {
                     alert('You must be logged in to upload files.');
                     return;
                 }
-
-                for (const file of selectedGeneratedFiles) {
+                for (const fileUrl of fileUrlList){
                     const q = query(fileCollection, and(
                         where("uid", "==", user.uid),
-                        where("url", "==", file.url)
+                        where("url", "==", fileUrl)
                     ));
                     const querySnapshot = await getDocs(q);
-                    querySnapshot.forEach(async (docSnapshot) => {
+                    querySnapshot.forEach((docSnapshot) => {
                         const fileData = docSnapshot.data();
-                        
-                        // Fetch the text content
-                        const text = await fetch(file.url).then(res => res.text());
+                        fetch(fileUrl)
+                        .then(response => response.text())
+                        .then(async (text) => {
+                            const {jsPDF} = window.jspdf;
+                            const newdoc = new jsPDF();
+                            newdoc.text(text,10,10);
+                            const pdfBlob = newdoc.output('blob');
 
-                        // Convert the text to PDF
-                        const { jsPDF } = window.jspdf;
-                        const newDoc = new jsPDF();
-                        newDoc.text(text, 10, 10);
-                        const pdfBlob = newDoc.output('blob');
+                            const storageRef = ref(storage, 'texts/' + fileData.storageName);
+                            await deleteObject(storageRef);
+                            const newStorageRef = ref(storage, 'documents/' + fileData.storageName);
+                            await uploadBytes(newStorageRef, pdfBlob);
+                            const newurl = await getDownloadURL(newStorageRef);
 
-                        // Delete the old file from Storage
-                        const storageRef = ref(storage, 'texts/' + fileData.storageName);
-                        await deleteObject(storageRef);
-
-                        // Upload the new PDF to the documents folder
-                        const newStorageRef = ref(storage, 'documents/' + fileData.storageName);
-                        await uploadBytes(newStorageRef, pdfBlob);
-
-                        // Get the new download URL
-                        const newUrl = await getDownloadURL(newStorageRef);
-
-                        // Update the Firestore document with the new URL
-                        const docRef = docSnapshot.ref;
-                        await updateDoc(docRef, { url: newUrl, isOriginal: true });
-
-                        // Update the frontend lists immediately
-                        removeFromGenerateMenu(file.name);
-                        addToFileMenu(file.name, newUrl);
+                            const docRef = docSnapshot.ref;
+                            await updateDoc(docRef, { url: newurl, isOriginal: true });
+                        });
                     });
                 }
-            } catch (error) {
+            }  catch (error) {
                 console.error('Upload failed:', error);
             }
         }
-
 
         // call summarize function to create generated text
         function generateSummary(fileUrl) {
@@ -698,4 +671,3 @@
             });
         }
     </script>
-</body>
