@@ -474,6 +474,7 @@
         }
 
         // Save edited text back to the original location
+        // Save edited text back to Firebase Storage and update Firestore metadata
         document.getElementById('save-button').addEventListener('click', async () => {
             const textEditor = document.getElementById('text-editor');
             const editedText = textEditor.value;
@@ -481,14 +482,35 @@
             const fileUrl = textEditor.dataset.fileUrl;
 
             try {
-                const textBlob = new Blob([editedText], { type: 'text/plain' });
+                const user = auth.currentUser;
+                if (!user) {
+                    alert('You must be logged in to save the document.');
+                    return;
+                }
 
-                // Upload edited text to Firebase storage
-                const storageRef = ref(storage, 'texts/' + fileName);
+                // Step 1: Retrieve the metadata object from Firestore
+                const q = query(fileCollection, where('uid', '==', user.uid), where('url', '==', fileUrl));
+                const querySnapshot = await getDocs(q);
+
+                if (querySnapshot.empty) {
+                    alert('Document metadata not found.');
+                    return;
+                }
+
+                const docSnapshot = querySnapshot.docs[0];
+                const fileData = docSnapshot.data();
+
+                // Step 2: Overwrite the file in Firebase Storage
+                const storageRef = ref(storage, 'documents/' + fileData.storageName);
+                const textBlob = new Blob([editedText], { type: 'text/plain' });
                 await uploadBytes(storageRef, textBlob);
+
+                // Step 3: Get the new URL for the uploaded file
                 const newUrl = await getDownloadURL(storageRef);
 
-                console.log('Document saved at:', newUrl);
+                // Step 4: Update Firestore metadata with the new URL
+                await updateDoc(docSnapshot.ref, { url: newUrl });
+
                 alert('Document saved successfully!');
             } catch (error) {
                 console.error('Error saving document:', error);
