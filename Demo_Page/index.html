@@ -464,6 +464,7 @@
 
         // update the generated storage with a RAG sumary
         async function uploadRAG(selectedFiles){
+            console.log("GOT HERE!!!!!1");
             let fileNameList = [];
             let fileUrlList = [];
             selectedFiles.forEach(file => {
@@ -471,8 +472,10 @@
                 fileUrlList.push(file.url);
             });
             try {
+                console.log("GOT HERE2!!!!!");
+                console.log(fileUrlList);
                 const summaryText = await generateRAG(fileUrlList);
-                console.log("GOT HERE!!!!!")
+                console.log("GOT HERE!!!!!");
                 const user = auth.currentUser;
                 if (!user) {
                     alert('You must be logged in to upload files.');
