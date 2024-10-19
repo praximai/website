@@ -521,7 +521,19 @@
                 console.error('Upload failed:', error);
             }
         }
+        function acceptOutput() {
+            if (selectedGeneratedFiles.length === 0) {
+                alert('No files selected to accept.');
+                return;
+            }
+            moveGenerated(selectedGeneratedFiles);
+            // Clear the selected generated files list
+            selectedGeneratedFiles = [];
 
+            // Uncheck all checkboxes in the generated files list
+            const checkboxes = document.querySelectorAll('#generated-file-list input[type="checkbox"]');
+            checkboxes.forEach(checkbox => checkbox.checked = false);
+        }
         // call summarize function to create generated text
         function generateSummary(fileUrl) {
             return fetch(`https://us-central1-praximai-438817.cloudfunctions.net/get_request`, {
