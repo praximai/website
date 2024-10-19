@@ -107,15 +107,17 @@
             nextMessage.innerHTML = `<strong>Praxim:</strong> ${botMessage}`;
             chatMessages.appendChild(nextMessage);
             fileHistory = window.getGeneratedText();
+            const nextMessage1 = document.createElement('p');
             botMessage = "Loading complete";
-            nextMessage.innerHTML = `<strong>Praxim:</strong> ${botMessage}`;
-            chatMessages.appendChild(nextMessage);
+            nextMessage1.innerHTML = `<strong>Praxim:</strong> ${botMessage}`;
+            chatMessages.appendChild(nextMessage1);
+            const nextMessage2 = document.createElement('p');
             botMessage = "Hi, I'm Praxim! How can I help you with this case?";
             // Create a new paragraph element for the bot's message
-            nextMessage.innerHTML = `<strong>Praxim:</strong> ${botMessage}`;
+            nextMessage2.innerHTML = `<strong>Praxim:</strong> ${botMessage}`;
 
             // Append the message to the chat-messages container
-            chatMessages.appendChild(nextMessage);
+            chatMessages.appendChild(nextMessage2);
 
             // Scroll to the bottom of the chat
             chatMessages.scrollTop = chatMessages.scrollHeight;
