@@ -455,11 +455,51 @@
                 console.error('Upload failed:', error);
             }
         }
+        
+        // update the generated storage with a RAG sumary
+        async function uploadRAG(selectedFiles){
+            let fileNameList = [];
+            let fileUrlList = [];
+            selectedFiles.forEach(file => {
+                fileNameList.push(file.name);
+                fileUrlList.push(file.url);
+            });
+            try {
+                const summaryText = await generateRAG(fileUrlList);
+                const user = auth.currentUser;
+                if (!user) {
+                    alert('You must be logged in to upload files.');
+                    return;
+                }
+                const q = query(
+                    fileCollection,
+                    where("uid", "==", userId),
+                    where("name", ">=", "RAG_summary"), 
+                    where("name", "<", "RAG_summary\uf8ff")
+                );
+                const querySnapshot = await getDocs(q);
+                const count = querySnapshot.size;
 
-        function uploadRAG(fileDataList) {
-            console.log('Synthesize request with:', fileDataList);
-            // Add logic to handle the RAG process with selected files
+                const textBlob = new Blob([summaryText], { type: 'text/plain' });
+                const combinedNames = fileNameList.join('_');
+                const modifiedFileName = user.uid + combinedNames;
+                const modName = "RAG_summary" + '_' + count;
+                const storageRef = ref(storage, 'texts/' + modifiedFileName);
+                await uploadBytes(storageRef, textBlob);
+                const url = await getDownloadURL(storageRef);
+                await addDoc(fileCollection, {
+                    name: modName,
+                    storageName: modifiedFileName,
+                    url: url,
+                    uid: user.uid,
+                    isOriginal: false
+                });
+                listGenerateDocuments();
+            }  catch (error) {
+                console.error('Upload failed:', error);
+            }
         }
+
         // call summarize function to create generated text
         function generateSummary(fileUrl) {
             return fetch(`https://us-central1-praximai-438817.cloudfunctions.net/get_request`, {
