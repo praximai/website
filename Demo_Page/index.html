@@ -643,7 +643,7 @@
                     isOriginal: false
                 });
                 alert('Praxim is learning the information in your file...please wait a minute');
-                fileHistory = await getGeneratedText();
+                fileHistory = getGeneratedText();
                 alert('Praxim is done learning!');
                 listGenerateDocuments();
             }  catch (error) {
