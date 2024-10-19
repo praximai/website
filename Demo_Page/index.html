@@ -558,15 +558,12 @@
                 alert('No files selected to accept.');
                 return;
             }
-            moveGenerated(selectedGeneratedFiles);
-            // Clear the selected generated files list
-            selectedGeneratedFiles = [];
-
-            // // Uncheck all checkboxes in the generated files list
-            // const checkboxes = document.querySelectorAll('#generated-file-list input[type="checkbox"]');
-            // checkboxes.forEach(checkbox => checkbox.checked = false);
-            // listDocuments();
-            // listGenerateDocuments();
+            moveGenerated(selectedGeneratedFiles)
+            .then(() => {
+                selectedGeneratedFiles = [];
+                listDocuments();
+                listGenerateDocuments();
+            });
         }
 
         // replaces generated text with pdf and moves to upload files
@@ -610,8 +607,6 @@
                         });
                     });
                 }
-                await listDocuments();
-                await listGenerateDocuments();
             }  catch (error) {
                 console.error('Upload failed:', error);
             }
