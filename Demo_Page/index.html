@@ -101,6 +101,7 @@
         let fileHistory = "";
         let chatInitialized = false;  // Track whether the chat has been initialized
         function initializeChat() {
+            const nextMessage = document.createElement('p');
             botMessage = "Praxim is loading your documents...";
             nextMessage.innerHTML = `<strong>Praxim:</strong> ${botMessage}`;
             fileHistory = getGeneratedText();
@@ -108,7 +109,6 @@
             nextMessage.innerHTML = `<strong>Praxim:</strong> ${botMessage}`;
             botMessage = "Hi, I'm Praxim! How can I help you with this case?";
             // Create a new paragraph element for the bot's message
-            const nextMessage = document.createElement('p');
             nextMessage.innerHTML = `<strong>Praxim:</strong> ${botMessage}`;
 
             // Append the message to the chat-messages container
