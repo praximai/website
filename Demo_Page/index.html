@@ -100,7 +100,7 @@
         let conversationHistory = ""; // Store the entire conversation for API requests
         let chatInitialized = false;  // Track whether the chat has been initialized
 
-        // Function to initialize the chat with the first message
+        // Function to initialize the chat with the first message (without displaying it)
         function initializeChat() {
             const initialMessage = 
                 "In the following conversation, refer to yourself as the following, if anyone asks what you are: " + 
@@ -111,17 +111,12 @@
             // Add the initial message to the conversation history
             conversationHistory += `System: ${initialMessage}\n`;
 
-            // Send the predefined message to the user interface
-            const newMessage = document.createElement('p');
-            newMessage.innerHTML = `<strong>System:</strong> ${initialMessage}`;
-            chatMessages.appendChild(newMessage);
-
             // Call the API with the initial message to get the next response
             generateText(conversationHistory).then(result => {
-                // Add the response to conversation history
+                // Add the API response to the conversation history
                 conversationHistory += `Praxim: ${result}\n`;
 
-                // Display the bot's response in the chat
+                // Display only the bot's response in the chat
                 const nextMessage = document.createElement('p');
                 nextMessage.innerHTML = `<strong>Praxim:</strong> ${result}`;
                 chatMessages.appendChild(nextMessage);
