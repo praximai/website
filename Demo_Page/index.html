@@ -749,9 +749,9 @@
                 const data = doc.data();
                 allFiles.push(data.url);
             });
-            console.log("allFiles");
+            console.log(allFiles);
             const output = generateRAG(allFiles);
-            console.log(output);
+            console.log("Output:", output);
             return output;
         }
         window.getGeneratedText = getGeneratedText;
