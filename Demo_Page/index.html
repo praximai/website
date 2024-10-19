@@ -386,7 +386,6 @@
             gen_li.addEventListener('click', () => displayGeneratedText(fileName, fileUrl));
             generateMenu.appendChild(gen_li);
         }
-        document.getElementById('accept-output-button').addEventListener('click', acceptOutput);
 
         // display the current original pdf
         const pdfContainer = document.getElementById('pdf-container');
@@ -554,18 +553,17 @@
         }
 
         // accepts output and clears selected generated files
-        async function acceptOutput() {
+        const acceptOutput = document.getElementById('accept-output-button');
+        acceptOutput.addEventListener('click', async (event) => {
             if (selectedGeneratedFiles.length === 0) {
                 alert('No files selected to accept.');
                 return;
             }
-            await moveGenerated(selectedGeneratedFiles)
             await moveGenerated(selectedGeneratedFiles);
             selectedGeneratedFiles = [];
             listDocuments();
             listGenerateDocuments();
-            moveGenerated();
-        }
+        });
 
         // replaces generated text with pdf and moves to upload files
         async function moveGenerated(selectedGeneratedFiles){
