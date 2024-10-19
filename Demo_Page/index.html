@@ -744,7 +744,7 @@
                 allFiles.push(data.url);
             });
             console.log("allFiles");
-            output =  generateRAG(allFiles);
+            const output = generateRAG(allFiles);
             console.log(output);
             return output;
         }
