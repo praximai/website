@@ -455,7 +455,7 @@
                 console.error('Upload failed:', error);
             }
         }
-        
+
         // update the generated storage with a RAG sumary
         async function uploadRAG(selectedFiles){
             let fileNameList = [];
@@ -473,7 +473,7 @@
                 }
                 const q = query(
                     fileCollection,
-                    where("uid", "==", userId),
+                    where("uid", "==", user.uid),
                     where("name", ">=", "RAG_summary"), 
                     where("name", "<", "RAG_summary\uf8ff")
                 );
