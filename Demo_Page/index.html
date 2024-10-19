@@ -102,25 +102,42 @@
             });
         }
 
+        let conversationHistory = ""; // Store the entire conversation for API requests
+
         function sendMessage() {
             const input = document.getElementById('chat-input');
-            const message = input.value.trim();
+            const message = input.value.trim(); // Get user input
+
             if (message) {
+                // Add the user's message to the conversation history for backend API call
+                conversationHistory += `User: ${message}\n`;
+
+                // Display only the latest message on the front-end
                 const newMessage = document.createElement('p');
                 newMessage.innerHTML = `<strong>You:</strong> ${message}`;
                 chatMessages.appendChild(newMessage);
+
+                // Clear input field and scroll to the bottom
                 input.value = '';
-                chatMessages.scrollTop = chatMessages.scrollHeight;                
-                generateText(message).then(result => {
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+
+                // Call the API with the full conversation history
+                generateText(conversationHistory).then(result => {
+                    // Add API response to conversation history
+                    conversationHistory += `GPT: ${result}\n`;
+
+                    // Display only the latest API response
                     const nextMessage = document.createElement('p');
                     nextMessage.innerHTML = `<strong>Praxim:</strong> ${result}`;
                     chatMessages.appendChild(nextMessage);
-                    input.value = '';
-                    chatMessages.scrollTop = chatMessages.scrollHeight;                          
+
+                    // Scroll to the bottom of the chat
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
                 });
             }
         }
 
+        // Trigger sendMessage on Enter key press
         document.getElementById('chat-input').addEventListener('keydown', function (event) {
             if (event.key === 'Enter') {
                 sendMessage();
