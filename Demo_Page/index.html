@@ -559,10 +559,11 @@
                 alert('No files selected to accept.');
                 return;
             }
-            await moveGenerated(selectedGeneratedFiles)
+            await moveGenerated(selectedGeneratedFiles);
             selectedGeneratedFiles = [];
             listDocuments();
             listGenerateDocuments();
+            moveGenerated();
         }
 
         // replaces generated text with pdf and moves to upload files
