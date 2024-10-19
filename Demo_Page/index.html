@@ -64,7 +64,7 @@
             const chatOverlay = document.getElementById('chat-overlay');
             chatOverlay.classList.toggle('open');
         }
-        
+
         document.addEventListener('keydown', function (event) {
             if (event.key === 'Escape') {
                 const chatOverlay = document.getElementById('chat-overlay');
@@ -242,7 +242,7 @@
                 alert('Please upload a PDF file.');
             }
         });
-        
+
         // create ORIGINAL list
         import { query, where, and} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
         const fileMenu = document.getElementById('uploaded-file-list');
@@ -252,7 +252,7 @@
                 console.log('No user signed in.');
                 return;
             }
-            
+
             try {
                 fileMenu.innerHTML = '';
                 const q = query(fileCollection, and(
@@ -307,7 +307,7 @@
             const checkboxes = document.querySelectorAll('#uploaded-file-list input[type="checkbox"]');
             checkboxes.forEach(checkbox => checkbox.checked = false);
         }
-        
+
         document.getElementById('synthesize-button').addEventListener('click', synthesizeDocuments);
         // create GENERATE list
         async function listGenerateDocuments() {
@@ -316,7 +316,7 @@
                 console.log('No user signed in.');
                 return;
             }
-            
+
             try {
                 generateMenu.innerHTML = '';
                 const q = query(fileCollection, and(
@@ -333,55 +333,14 @@
             }
         }
         // add to generate menu
-        let selectedGeneratedFiles = [];
         const generateMenu = document.getElementById('generated-file-list');
         function addToGenerateMenu(fileName, fileUrl) {
             const gen_li = document.createElement('li');
             gen_li.textContent = fileName;
 
-            const checkbox = document.createElement('input');
-            checkbox.type = 'checkbox';
-            checkbox.style.marginLeft = '10px'; // Spacing
-
-            checkbox.addEventListener('change', () => {
-                if (checkbox.checked) {
-                    selectedGeneratedFiles.push({ name: fileName, url: fileUrl });
-                } else {
-                    selectedGeneratedFiles = selectedGeneratedFiles.filter(file => file.url !== fileUrl);
-                }
-            });
-
-            gen_li.appendChild(checkbox);
             gen_li.addEventListener('click', () => displayGeneratedText(fileName, fileUrl));
             generateMenu.appendChild(gen_li);
         }
-        function acceptOutput() {
-            if (selectedGeneratedFiles.length === 0) {
-                alert('No files selected to accept.');
-                return;
-            }
-
-            // Add selected generated files to the uploaded files list
-            selectedGeneratedFiles.forEach(file => {
-                addToFileMenu(file.name, file.url);
-            });
-
-            // Remove selected files from the generated files list
-            selectedGeneratedFiles.forEach(file => {
-                const li = Array.from(generateMenu.children).find(
-                    item => item.textContent.trim() === file.name
-                );
-                if (li) generateMenu.removeChild(li);
-            });
-
-            // Clear the selected generated files list
-            selectedGeneratedFiles = [];
-
-            // Uncheck all checkboxes in the generated files list
-            const checkboxes = document.querySelectorAll('#generated-file-list input[type="checkbox"]');
-            checkboxes.forEach(checkbox => checkbox.checked = false);
-        }
-
                 // display the current original pdf
         const pdfContainer = document.getElementById('pdf-container');
         let currentPdf = null;  // Store the currently loaded PDF
@@ -454,7 +413,7 @@
         // Start observing the left panel for resizes
         resizeObserver.observe(document.getElementById('left-panel'));
         const textContainer = document.getElementById('text-container');
-        
+
         function displayGeneratedText(fileName, fileUrl) {
             fetch(fileUrl)
                 .then((response) => {
@@ -512,6 +471,7 @@
                 fileUrlList.push(file.url);
             });
             try {
+                console.log(fileUrlList);
                 const summaryText = await generateRAG(fileUrlList);
 
                 const user = auth.currentUser;
@@ -606,4 +566,3 @@
         }
     </script>
 </body>
-</html>
