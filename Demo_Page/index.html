@@ -127,25 +127,6 @@
             }
         }
 
-        async function getGeneratedText(){
-            const user = auth.currentUser;
-            if (!user) {
-                console.log('No user signed in.');
-                return;
-            }
-            let allFiles = [];
-            const q = query(fileCollection, where("uid", "==", user.uid));
-            const querySnapshot = await getDocs(q);
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                allFiles.push({
-                    name: data.name,
-                    url: data.url
-                });
-            });
-            return generateRAG(allFiles);
-        }
-
         function sendMessage() {
             const input = document.getElementById('chat-input');
             const message = input.value.trim(); // Get user input
@@ -700,6 +681,26 @@
             } catch (error) {
                 console.error('Upload failed:', error);
             }
+        }
+
+        // gets all generated text
+        async function getGeneratedText(){
+            const user = auth.currentUser;
+            if (!user) {
+                console.log('No user signed in.');
+                return;
+            }
+            let allFiles = [];
+            const q = query(fileCollection, where("uid", "==", user.uid));
+            const querySnapshot = await getDocs(q);
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                allFiles.push({
+                    name: data.name,
+                    url: data.url
+                });
+            });
+            return generateRAG(allFiles);
         }
 
         // call summarize function to create generated text
