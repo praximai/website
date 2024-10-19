@@ -386,7 +386,8 @@
             generateMenu.appendChild(gen_li);
         }
         document.getElementById('accept-output-button').addEventListener('click', acceptOutput);
-                // display the current original pdf
+
+        // display the current original pdf
         const pdfContainer = document.getElementById('pdf-container');
         let currentPdf = null;  // Store the currently loaded PDF
         let canvases = [];      // Store references to canvas elements
@@ -561,11 +562,11 @@
             // Clear the selected generated files list
             selectedGeneratedFiles = [];
 
-            // Uncheck all checkboxes in the generated files list
-            const checkboxes = document.querySelectorAll('#generated-file-list input[type="checkbox"]');
-            checkboxes.forEach(checkbox => checkbox.checked = false);
-            listDocuments();
-            listGenerateDocuments();
+            // // Uncheck all checkboxes in the generated files list
+            // const checkboxes = document.querySelectorAll('#generated-file-list input[type="checkbox"]');
+            // checkboxes.forEach(checkbox => checkbox.checked = false);
+            // listDocuments();
+            // listGenerateDocuments();
         }
 
         // replaces generated text with pdf and moves to upload files
@@ -599,14 +600,18 @@
                             const pdfBlob = newdoc.output('blob');
 
                             const storageRef = ref(storage, 'texts/' + fileData.storageName);
-                            await uploadBytes(storageRef, pdfBlob);
-                            const newurl = await getDownloadURL(storageRef);
+                            await deleteObject(storageRef);
+                            const newStorageRef = ref(storage, 'documents/' + fileData.storageName);
+                            await uploadBytes(newStorageRef, pdfBlob);
+                            const newurl = await getDownloadURL(newStorageRef);
 
                             const docRef = docSnapshot.ref;
                             await updateDoc(docRef, { url: newurl, isOriginal: true });
                         });
                     });
                 }
+                await listDocuments();
+                await listGenerateDocuments();
             }  catch (error) {
                 console.error('Upload failed:', error);
             }
