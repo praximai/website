@@ -54,8 +54,6 @@
         </div>
     </div>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
-    
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script>
         function toggleMenu(menuId) {
             const menu = document.getElementById(menuId);
@@ -335,7 +333,6 @@
             }
         }
         // add to generate menu
-
         let selectedGeneratedFiles = [];
         const generateMenu = document.getElementById('generated-file-list');
         function addToGenerateMenu(fileName, fileUrl) {
@@ -358,52 +355,6 @@
             gen_li.addEventListener('click', () => displayGeneratedText(fileName, fileUrl));
             generateMenu.appendChild(gen_li);
         }
-
-        function acceptOutput() {
-            if (selectedGeneratedFiles.length === 0) {
-                alert('No files selected to accept.');
-                return;
-            }
-
-            // Loop through selected generated files and convert each to PDF
-            selectedGeneratedFiles.forEach(async (file) => {
-                try {
-                    const textContent = await fetch(file.url).then((res) => res.text());
-                    const pdf = await createPDF(file.name, textContent);
-                    const pdfUrl = URL.createObjectURL(pdf);
-                    const pdfFileName = file.name.replace(/_generated$/, '.pdf'); // Adjust filename
-
-                    // Add the newly created PDF to the uploaded files list
-                    addToFileMenu(pdfFileName, pdfUrl);
-                } catch (error) {
-                    console.error('Error converting file to PDF:', error);
-                }
-            });
-
-            // Clear the selected generated files list
-            selectedGeneratedFiles = [];
-
-            // Remove selected files from the generated files list
-            const checkboxes = document.querySelectorAll('#generated-file-list input[type="checkbox"]');
-            checkboxes.forEach((checkbox) => {
-                if (checkbox.checked) {
-                    const li = checkbox.parentElement;
-                    generateMenu.removeChild(li);
-                }
-            });
-        }
-
-        async function createPDF(fileName, textContent) {
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF();
-
-            pdf.text(textContent, 10, 10); // Add text to the PDF at coordinates (10, 10)
-            const pdfBlob = pdf.output('blob'); // Generate the PDF as a Blob
-
-            return pdfBlob;
-        }
-
-
         function acceptOutput() {
             if (selectedGeneratedFiles.length === 0) {
                 alert('No files selected to accept.');
@@ -430,7 +381,6 @@
             const checkboxes = document.querySelectorAll('#generated-file-list input[type="checkbox"]');
             checkboxes.forEach(checkbox => checkbox.checked = false);
         }
-        document.getElementById('accept-output-button').addEventListener('click', acceptOutput);
 
                 // display the current original pdf
         const pdfContainer = document.getElementById('pdf-container');
