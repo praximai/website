@@ -422,18 +422,18 @@
         // Render individual pages only once
         function renderPage(pdf, pageNumber, canvas) {
             pdf.getPage(pageNumber).then((page) => {
-                const viewport = page.getViewport({ scale: 1 }); // Initial scale 1 for original size
-                const context = canvas.getContext('2d');
+                const viewport = page.getViewport({ scale: 1 }); // Initial scale
 
-                // Set the canvas size based on the viewport
+                // Set canvas dimensions to match the PDF page size
                 canvas.width = viewport.width;
                 canvas.height = viewport.height;
 
-                // Render the page onto the canvas
+                const context = canvas.getContext('2d');
+
+                // Render the PDF page onto the canvas
                 page.render({ canvasContext: context, viewport: viewport }).promise.then(() => {
                     console.log(`Rendered page ${pageNumber}`);
-                    // Rescale the canvas to fit the container after rendering
-                    rescaleCanvas(canvas, viewport);
+                    rescaleCanvas(canvas, viewport); // Rescale if needed
                 });
             }).catch((error) => {
                 console.error(`Error rendering page ${pageNumber}:`, error);
@@ -441,13 +441,14 @@
         }
 
         function rescaleCanvas(canvas, viewport) {
-            const containerWidth = pdfContainer.clientWidth;  // Get container width
-            const scale = Math.min(containerWidth / viewport.width, 1);  // Calculate new scale (max 1)
+            const containerWidth = pdfContainer.clientWidth; // Get container width
+            const scale = Math.min(containerWidth / viewport.width, 1); // Max scale of 1
 
-            // Apply the scaled dimensions using CSS
+            // Apply scaled dimensions using CSS, keeping it responsive
             canvas.style.width = `${viewport.width * scale}px`;
             canvas.style.height = `${viewport.height * scale}px`;
         }
+
 
 
         // Listen for resize events and rescale the canvases
