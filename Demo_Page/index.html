@@ -566,47 +566,47 @@
         });
 
         // replaces generated text with pdf and moves to upload files
-        async function moveGenerated(selectedGeneratedFiles){
+        async function moveGenerated(selectedGeneratedFiles) {
             let fileNameList = [];
             let fileUrlList = [];
             selectedGeneratedFiles.forEach(file => {
                 fileNameList.push(file.name);
                 fileUrlList.push(file.url);
             });
+
             try {
                 const user = auth.currentUser;
                 if (!user) {
                     alert('You must be logged in to upload files.');
                     return;
                 }
-                for (const fileUrl of fileUrlList){
+
+                const promises = fileUrlList.map(async (fileUrl) => {
                     const q = query(fileCollection, and(
                         where("uid", "==", user.uid),
                         where("url", "==", fileUrl)
                     ));
                     const querySnapshot = await getDocs(q);
-                    querySnapshot.forEach((docSnapshot) => {
+                    const innerPromises = querySnapshot.docs.map(async (docSnapshot) => {
                         const fileData = docSnapshot.data();
-                        fetch(fileUrl)
-                        .then(response => response.text())
-                        .then(async (text) => {
-                            const {jsPDF} = window.jspdf;
-                            const newdoc = new jsPDF();
-                            newdoc.text(text,10,10);
-                            const pdfBlob = newdoc.output('blob');
-
-                            const storageRef = ref(storage, 'texts/' + fileData.storageName);
-                            await deleteObject(storageRef);
-                            const newStorageRef = ref(storage, 'documents/' + fileData.storageName);
-                            await uploadBytes(newStorageRef, pdfBlob);
-                            const newurl = await getDownloadURL(newStorageRef);
-
-                            const docRef = docSnapshot.ref;
-                            await updateDoc(docRef, { url: newurl, isOriginal: true });
-                        });
+                        const response = await fetch(fileUrl);
+                        const text = await response.text();
+                        const { jsPDF } = window.jspdf;
+                        const newdoc = new jsPDF();
+                        newdoc.text(text, 10, 10);
+                        const pdfBlob = newdoc.output('blob');
+                        const storageRef = ref(storage, 'texts/' + fileData.storageName);
+                        await deleteObject(storageRef);
+                        const newStorageRef = ref(storage, 'documents/' + fileData.storageName);
+                        await uploadBytes(newStorageRef, pdfBlob);
+                        const newurl = await getDownloadURL(newStorageRef);
+                        const docRef = docSnapshot.ref;
+                        await updateDoc(docRef, { url: newurl, isOriginal: true });
                     });
-                }
-            }  catch (error) {
+                    return Promise.all(innerPromises);
+                });
+                await Promise.all(promises);
+            } catch (error) {
                 console.error('Upload failed:', error);
             }
         }
