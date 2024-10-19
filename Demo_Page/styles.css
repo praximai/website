@@ -212,21 +212,6 @@ canvas {
     background-color: #068f1f; 
 }
 
-.accept-output-button {
-    width: 100%; /* Full width */
-    padding: 10px;
-    background-color: #4CAF50;
-    color: white;
-    border: none;
-    border-radius: 0 0 5px 5px; /* Bottom corners rounded */
-    cursor: pointer;
-    text-align: center;
-}
-
-.accept-output-button:hover {
-    background-color: #45a049;
-}
-
 #generated-file-list li input[type="checkbox"] {
     margin-left: auto; /* Align the checkbox to the right */
 }
