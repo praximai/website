@@ -302,7 +302,9 @@
                     }
 
                     // Refresh the document lists
-                    fileHistory = getGeneratedText();
+                    alert('Praxim is learning the information in your file...please wait a minute');
+                    fileHistory = await getGeneratedText();
+                    alert('Praxim is done learning!');
                     listDocuments();
                     listGenerateDocuments();
 
@@ -640,7 +642,9 @@
                     uid: user.uid,
                     isOriginal: false
                 });
-                fileHistory = getGeneratedText();
+                alert('Praxim is learning the information in your file...please wait a minute');
+                fileHistory = await getGeneratedText();
+                alert('Praxim is done learning!');
                 listGenerateDocuments();
             }  catch (error) {
                 console.error('Upload failed:', error);
