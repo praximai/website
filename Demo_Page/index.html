@@ -591,36 +591,24 @@
                         const fileData = docSnapshot.data();
                         const response = await fetch(fileUrl);
                         const text = await response.text();
-
-                        // Initialize jsPDF with A4 page size
                         const { jsPDF } = window.jspdf;
-                        const newdoc = new jsPDF({
-                            format: 'a4', // Standard A4 size
-                            unit: 'pt', // Points for better precision
-                        });
-
-                        const pageWidth = newdoc.internal.pageSize.getWidth();
-                        const pageHeight = newdoc.internal.pageSize.getHeight();
-                        const margin = 40; // Margin from all sides
-                        const maxWidth = pageWidth - 2 * margin;
-
-                        // Split the text into lines to fit the page width
-                        const lines = newdoc.splitTextToSize(text, maxWidth);
-                        let cursorY = margin;
-
-                        // Add text to PDF page-by-page
-                        lines.forEach((line) => {
-                            if (cursorY + 20 > pageHeight - margin) {
-                                newdoc.addPage(); // Add a new page when content overflows
-                                cursorY = margin; // Reset Y position for new page
+                        const newdoc = new jsPDF();
+                        const margin = 10;
+                        const pageWidth = newdoc.internal.pageSize.getWidth() - 2 * margin;
+                        const pageHeight = newdoc.internal.pageSize.getHeight() - margin;
+                        const startingY = margin;
+                        const lineHeight = 10;
+                        const textLines = newdoc.splitTextToSize(text, pageWidth);
+                        let currentY = startingY;
+                        textLines.forEach((line) => {
+                            if (currentY + lineHeight > pageHeight) {
+                                newdoc.addPage();
+                                currentY = margin;
                             }
-                            newdoc.text(line, margin, cursorY);
-                            cursorY += 20; // Move down for the next line
+                            newdoc.text(line, margin, currentY);
+                            currentY += lineHeight;
                         });
-
-                        const pdfBlob = newdoc.output('blob'); // Create PDF blob
-
-                        // Replace old file with the new PDF in Firebase storage
+                        const pdfBlob = newdoc.output('blob');
                         const storageRef = ref(storage, 'texts/' + fileData.storageName);
                         await deleteObject(storageRef);
                         const newStorageRef = ref(storage, 'documents/' + fileData.storageName);
