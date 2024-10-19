@@ -559,11 +559,32 @@
                 alert('No files selected to accept.');
                 return;
             }
-            await moveGenerated(selectedGeneratedFiles);
-            selectedGeneratedFiles = [];
-            listDocuments();
-            listGenerateDocuments();
-            moveGenerated();
+
+            try {
+                await moveGenerated(selectedGeneratedFiles); // Move files on the backend
+
+                // Update the frontend lists without reloading the page
+                selectedGeneratedFiles.forEach((file) => {
+                    removeFromGenerateMenu(file.name); // Remove from generated list
+                    addToFileMenu(file.name, file.url); // Add to uploaded list
+                });
+
+                // Clear the selected files array
+                selectedGeneratedFiles = [];
+            } catch (error) {
+                console.error('Error moving files:', error);
+            }
+        }
+
+        function removeFromGenerateMenu(fileName) {
+            const generateMenu = document.getElementById('generated-file-list');
+            const items = Array.from(generateMenu.children);
+
+            items.forEach((item) => {
+                if (item.textContent.trim() === fileName) {
+                    generateMenu.removeChild(item); // Remove the item from the generated list
+                }
+            });
         }
 
         // replaces generated text with pdf and moves to upload files
