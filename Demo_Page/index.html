@@ -211,7 +211,7 @@
         // Import necessary Firebase functions
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
         import { getAuth, signOut } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js';
-        import { getFirestore, collection, addDoc, getDocs, deleteDoc, setDoc, doc } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, setDoc, doc, updateDoc} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
         import { getStorage, ref, uploadBytes, getDownloadURL, deleteObject } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-storage.js';
 
         // Firebase configuration
@@ -617,15 +617,8 @@
                             const newurl = await getDownloadURL(storageRef);
 
                             const docRef = docSnapshot.ref;
-                            docRef.update({ url: newurl, isOriginal: true })
-                            .then(() => {
-                                console.log(`Successfully updated document with ID: ${doc.id}`);
-                            })
-                            .catch(error => {
-                                console.error(`Error updating document: ${error}`);
-                            });
-                        })
-                        .catch(error => console.error('Error fetching file:', error));
+                            await updateDoc(docRef, { url: newurl, isOriginal: true });
+                        });
                     });
                 }
             }  catch (error) {
