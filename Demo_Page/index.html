@@ -458,6 +458,35 @@
                     console.error('There has been a problem with your fetch operation:', error);
             });
         }
+
+        // call RAG function to create RAG generated text
+        function generateRAG(fileUrlList) {
+            return fetch(`https://us-central1-praximai-438817.cloudfunctions.net/get_request`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    action: 'generate_rag',
+                    input_prompt: fileUrlList,
+                }),
+                mode: 'cors'
+            })
+            .then(response => {
+                if (!response.ok) {
+                throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(json => {
+                const response_result = json.result;
+                console.log('API Response Result:', response_result);
+                return response_result;
+            })
+                .catch(error => {
+                    console.error('There has been a problem with your fetch operation:', error);
+            });
+        }
     </script>
 </body>
 </html>
