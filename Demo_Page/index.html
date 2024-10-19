@@ -318,7 +318,6 @@
                     selectedFiles = selectedFiles.filter(file => file.url !== fileUrl);
                 }
             });
-
             li.appendChild(checkbox); // Add the checkbox to the list item
             li.addEventListener('click', () => displayPDF(fileName, fileUrl));
             fileMenu.appendChild(li);
@@ -393,7 +392,7 @@
         let canvases = [];      // Store references to canvas elements
 
         // Display the PDF only once
-        function displayPDF(fileName, fileUrl) {
+        async function displayPDF(fileName, fileUrl) {
             fetch(fileUrl)
                 .then((response) => response.arrayBuffer())
                 .then((pdfData) => {
@@ -461,16 +460,25 @@
         const textContainer = document.getElementById('text-container');
 
         // Load text into the editor
-        function displayGeneratedText(fileName, fileUrl) {
+        async function displayGeneratedText(fileName, fileUrl) {
+            const q = query(fileCollection, and(
+                where("uid", "==", user.uid),
+                where("name", "==", fileName)
+            ));
+            const querySnapshot = await getDocs(q);
+            querySnapshot.forEach((docSnapshot) => {
+                const fileData = docSnapshot.data();
+                fileUrl = fileData.url;
+            });
             fetch(fileUrl)
-                .then(response => response.text())
-                .then((text) => {
-                    const textEditor = document.getElementById('text-editor');
-                    textEditor.value = text; // Load text into textarea
-                    textEditor.dataset.fileName = fileName;
-                    textEditor.dataset.fileUrl = fileUrl;
-                })
-                .catch((error) => console.error('Error loading text:', error));
+            .then(response => response.text())
+            .then((text) => {
+                const textEditor = document.getElementById('text-editor');
+                textEditor.value = text; // Load text into textarea
+                textEditor.dataset.fileName = fileName;
+                textEditor.dataset.fileUrl = fileUrl;
+            })
+            .catch((error) => console.error('Error loading text:', error));
         }
 
         // Save edited text back to the original location
