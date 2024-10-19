@@ -215,3 +215,31 @@ canvas {
 #generated-file-list li input[type="checkbox"] {
     margin-left: auto; /* Align the checkbox to the right */
 }
+
+.text-editor {
+    width: 100%;
+    height: 80%;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    padding: 10px;
+    box-sizing: border-box;
+    resize: none;
+    font-family: Arial, sans-serif;
+    font-size: 14px;
+}
+
+.save-button {
+    width: 100%;
+    padding: 10px;
+    margin-top: 10px;
+    background-color: #4CAF50;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.save-button:hover {
+    background-color: #45a049;
+}

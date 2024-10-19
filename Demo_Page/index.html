@@ -36,10 +36,10 @@
     </div>
 
     <div class="right-panel" id="right-panel">
-        <div class="pdf-container" id="text-container">
-            <p>Document Viewer</p>
-        </div>
-
+        <textarea id="text-editor" class="text-editor"></textarea>
+    
+        <button id="save-button" class="save-button">Save</button>
+    
         <div class="chat-overlay" id="chat-overlay">
             <div class="chat-header">
                 <span>Chat</span>
@@ -460,26 +460,42 @@
         resizeObserver.observe(document.getElementById('left-panel'));
         const textContainer = document.getElementById('text-container');
 
+        // Load text into the editor
         function displayGeneratedText(fileName, fileUrl) {
             fetch(fileUrl)
-                .then(response => {
-                    if (!response.ok) {
-                        console.log(fileUrl);
-                        throw new Error('Failed to fetch the text file');
-                    }
-                    return response.text(); 
+                .then(response => response.text())
+                .then((text) => {
+                    const textEditor = document.getElementById('text-editor');
+                    textEditor.value = text; // Load text into textarea
+                    textEditor.dataset.fileName = fileName;
+                    textEditor.dataset.fileUrl = fileUrl;
                 })
-                .then((markdownText) => {
-                    // Convert Markdown to HTML using marked.js
-                    const formattedHTML = marked.parse(markdownText);
-
-                    // Display the formatted HTML inside the text container
-                    textContainer.innerHTML = formattedHTML;
-                })
-                .catch((error) => {
-                    console.error('Error displaying text file:', error);
-                });
+                .catch((error) => console.error('Error loading text:', error));
         }
+
+        // Save edited text back to the original location
+        document.getElementById('save-button').addEventListener('click', async () => {
+            const textEditor = document.getElementById('text-editor');
+            const editedText = textEditor.value;
+            const fileName = textEditor.dataset.fileName;
+            const fileUrl = textEditor.dataset.fileUrl;
+
+            try {
+                const textBlob = new Blob([editedText], { type: 'text/plain' });
+
+                // Upload edited text to Firebase storage
+                const storageRef = ref(storage, 'texts/' + fileName);
+                await uploadBytes(storageRef, textBlob);
+                const newUrl = await getDownloadURL(storageRef);
+
+                console.log('Document saved at:', newUrl);
+                alert('Document saved successfully!');
+            } catch (error) {
+                console.error('Error saving document:', error);
+                alert('Failed to save the document.');
+            }
+        });
+
 
         // update the generated storage
         async function uploadGeneration(filename, fileUrl) {
