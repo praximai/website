@@ -512,19 +512,26 @@
 
                 const docSnapshot = querySnapshot.docs[0];
                 const fileData = docSnapshot.data();
-                
+
                 // Step 2: Overwrite the file in Firebase Storage
-                const storageRef = ref(storage, 'texts/' + fileData.storageName);
+                const storageRef = ref(storage, 'documents/' + fileData.storageName);
                 const textBlob = new Blob([editedText], { type: 'text/plain' });
                 await uploadBytes(storageRef, textBlob);
 
                 // Step 3: Get the new URL for the uploaded file
                 const newUrl = await getDownloadURL(storageRef);
 
-                // Step 4: Update Firestore metadata with the new URL
-                await updateDoc(docSnapshot.ref, { url: newUrl });
+                // Step 4: Update Firestore metadata with the new URL and mark as original
+                await updateDoc(docSnapshot.ref, { 
+                    url: newUrl, 
+                    isOriginal: true  // Ensure the file stays in the uploaded list
+                });
 
                 alert('Document saved successfully!');
+
+                // Step 5: Refresh the lists to reflect the changes
+                listDocuments();
+                listGenerateDocuments();
             } catch (error) {
                 console.error('Error saving document:', error);
                 alert('Failed to save the document.');
