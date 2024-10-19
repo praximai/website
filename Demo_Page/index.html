@@ -98,12 +98,27 @@
         }
 
         let conversationHistory = ""; // Store the entire conversation for API requests
+        let chatInitialized = false;  // Track whether the chat has been initialized
 
+        // Function to initialize the chat with the first message (without displaying it)
+        function initializeChat() {
+            const botMessage = "Hi, I'm Praxim! How can I help you with this case?";
+            const nextMessage = document.createElement('p');
+            nextMessage.innerHTML = `<strong>Praxim:</strong> ${botMessage}`;
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            chatInitialized = true;  
+        }
         // Modified toggleChat function to trigger chat initialization
         function toggleChat() {
             const chatOverlay = document.getElementById('chat-overlay');
             chatOverlay.classList.toggle('open');
+
+            // Initialize the chat only when it is opened for the first time
+            if (!chatInitialized) {
+                initializeChat();
+            }
         }
+
         function sendMessage() {
             const input = document.getElementById('chat-input');
             const message = input.value.trim(); // Get user input
