@@ -605,12 +605,14 @@
                     return;
                 }
                 fileUrlList.forEach(fileUrl => {
+                    console.log(fileUrl);
                     fileCollection
                     .where('url', '==', fileUrl)
                     .where('uid', '==', user.uid)
                     .get()
                     .then(querySnapshot => {
                         querySnapshot.forEach(doc => {
+                            console.log(doc.data().name);
                             fetch(fileUrl)
                             .then(response => response.text())
                             .then(async (text) => {
@@ -623,6 +625,7 @@
                                 await uploadBytes(storageRef, pdfBlob);
                                 const newurl = await getDownloadURL(storageRef);
                                 const docRef = doc.ref;
+                                console.log(newurl);
                                 docRef.update({ url: newurl, isOriginal: true })
                                 .then(() => {
                                     console.log(`Successfully updated document with ID: ${doc.id}`);
