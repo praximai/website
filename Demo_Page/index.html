@@ -420,33 +420,33 @@
         // Render individual pages only once
         function renderPage(pdf, pageNumber, canvas) {
             pdf.getPage(pageNumber).then((page) => {
-                const initialViewport = page.getViewport({ scale: 2 });
+                const viewport = page.getViewport({ scale: 1 }); // Initial scale 1 for original size
                 const context = canvas.getContext('2d');
 
-                // Set canvas size based on the initial viewport
-                canvas.width = initialViewport.width;
-                canvas.height = initialViewport.height;
+                // Set the canvas size based on the viewport
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
 
-                // Render the page content onto the canvas
-                page.render({ canvasContext: context, viewport: initialViewport }).promise.then(() => {
+                // Render the page onto the canvas
+                page.render({ canvasContext: context, viewport: viewport }).promise.then(() => {
                     console.log(`Rendered page ${pageNumber}`);
-                    // Scale the canvas to fit the container initially
-                    rescaleCanvas(canvas, initialViewport);
+                    // Rescale the canvas to fit the container after rendering
+                    rescaleCanvas(canvas, viewport);
                 });
             }).catch((error) => {
                 console.error(`Error rendering page ${pageNumber}:`, error);
             });
         }
 
-        // Rescale canvas on resize
         function rescaleCanvas(canvas, viewport) {
-            const containerWidth = pdfContainer.clientWidth;  // Get current container width
-            const scale = 0.94 * containerWidth / viewport.width;  // Calculate the new scale
+            const containerWidth = pdfContainer.clientWidth;  // Get container width
+            const scale = Math.min(containerWidth / viewport.width, 1);  // Calculate new scale (max 1)
 
-            // Apply scaled dimensions using CSS (without affecting the internal canvas resolution)
+            // Apply the scaled dimensions using CSS
             canvas.style.width = `${viewport.width * scale}px`;
             canvas.style.height = `${viewport.height * scale}px`;
         }
+
 
         // Listen for resize events and rescale the canvases
         const resizeObserver = new ResizeObserver(() => {

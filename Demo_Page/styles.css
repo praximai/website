@@ -69,21 +69,25 @@ body {
     box-sizing: border-box;
 }
 
-.pdf-container {
-    background-color: white;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    padding: 10px;
-    overflow: auto;
-    width: 100%; /* Take full width of its container */
-    height: auto; /* Allow height to adjust with content */
-    box-sizing: border-box;
+#pdf-container {
+    overflow: hidden; /* Prevent content overflow */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
 }
 
 canvas {
-    display: block;  /* Prevent the canvas from being inline */
-    margin: 0 auto;  /* Center the canvas horizontally */
+    max-width: 100%;  /* Ensure the canvas doesn’t overflow horizontally */
+    height: auto;     /* Maintain aspect ratio */
+    display: block;
+    margin: 10px 0;
+    box-sizing: border-box;
 }
+
+
 
 #logout-button {
     position: absolute;
