@@ -100,29 +100,35 @@
         let conversationHistory = ""; 
         let fileHistory = "";
         let chatInitialized = false;  // Track whether the chat has been initialized
-        function initializeChat() {
+        async function initializeChat() {
             const chatMessages = document.getElementById('chat-messages');
-            const nextMessage = document.createElement('p');
-            botMessage = "Praxim is loading your documents...";
+            
+            let nextMessage = document.createElement('p');
+            let botMessage = "Praxim is loading your documents...";
             nextMessage.innerHTML = `<strong>Praxim:</strong> ${botMessage}`;
             chatMessages.appendChild(nextMessage);
-            fileHistory = window.getGeneratedText();
-            const nextMessage1 = document.createElement('p');
-            botMessage = "Loading complete";
-            nextMessage1.innerHTML = `<strong>Praxim:</strong> ${botMessage}`;
-            chatMessages.appendChild(nextMessage1);
-            const nextMessage2 = document.createElement('p');
-            botMessage = "Hi, I'm Praxim! How can I help you with this case?";
-            // Create a new paragraph element for the bot's message
-            nextMessage2.innerHTML = `<strong>Praxim:</strong> ${botMessage}`;
 
-            // Append the message to the chat-messages container
-            chatMessages.appendChild(nextMessage2);
+            try {
+                // Await the result of the asynchronous function
+                fileHistory = await window.getGeneratedText();
+            } catch (error) {
+                console.error("Error loading generated text:", error);
+                fileHistory = "Could not load file history.";
+            }
+
+            nextMessage = document.createElement('p');
+            botMessage = "Loading complete";
+            nextMessage.innerHTML = `<strong>Praxim:</strong> ${botMessage}`;
+            chatMessages.appendChild(nextMessage);
+
+            nextMessage = document.createElement('p');
+            botMessage = "Hi, I'm Praxim! How can I help you with this case?";
+            nextMessage.innerHTML = `<strong>Praxim:</strong> ${botMessage}`;
+            chatMessages.appendChild(nextMessage);
 
             // Scroll to the bottom of the chat
             chatMessages.scrollTop = chatMessages.scrollHeight;
 
-            // Mark the chat as initialized
             chatInitialized = true;
         }
         // Modified toggleChat function to trigger chat initialization
