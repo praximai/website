@@ -104,7 +104,7 @@
             const nextMessage = document.createElement('p');
             botMessage = "Praxim is loading your documents...";
             nextMessage.innerHTML = `<strong>Praxim:</strong> ${botMessage}`;
-            fileHistory = getGeneratedText();
+            fileHistory = window.getGeneratedText();
             botMessage = "Loading complete";
             nextMessage.innerHTML = `<strong>Praxim:</strong> ${botMessage}`;
             botMessage = "Hi, I'm Praxim! How can I help you with this case?";
