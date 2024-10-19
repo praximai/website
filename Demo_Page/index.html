@@ -553,17 +553,15 @@
         }
 
         // accepts output and clears selected generated files
-        function acceptOutput() {
+        async function acceptOutput() {
             if (selectedGeneratedFiles.length === 0) {
                 alert('No files selected to accept.');
                 return;
             }
-            moveGenerated(selectedGeneratedFiles)
-            .then(() => {
-                selectedGeneratedFiles = [];
-                listDocuments();
-                listGenerateDocuments();
-            });
+            await moveGenerated(selectedGeneratedFiles)
+            selectedGeneratedFiles = [];
+            listDocuments();
+            listGenerateDocuments();
         }
 
         // replaces generated text with pdf and moves to upload files
