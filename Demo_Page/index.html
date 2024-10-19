@@ -7,6 +7,8 @@
     <title>Summarization Page</title>
 </head>
 <body>
+    <button id="logout-button" onclick="logOut()">Log Out</button>
+    <button id="chat-button" onclick="toggleChat()">Chat</button>
     <div class="file-menu" id="uploaded-files-menu">
         <button class="file-menu-title" onclick="toggleMenu('uploaded-files-menu')">
             Accepted Files
@@ -37,9 +39,7 @@
         <div class="pdf-container" id="text-container">
             <p>Document Viewer</p>
         </div>
-        <button id="logout-button" onclick="logOut()">Log Out</button>
-        <button style="position: absolute; bottom: 10px; right: 10px;" 
-                onclick="toggleChat()">Chat</button>
+
         <div class="chat-overlay" id="chat-overlay">
             <div class="chat-header">
                 <span>Chat</span>
@@ -567,66 +567,78 @@
 
         // replaces generated text with pdf and moves to upload files
         async function moveGenerated(selectedGeneratedFiles) {
-            let fileNameList = [];
-            let fileUrlList = [];
-            selectedGeneratedFiles.forEach(file => {
-                fileNameList.push(file.name);
-                fileUrlList.push(file.url);
-            });
+    let fileNameList = [];
+    let fileUrlList = [];
+    selectedGeneratedFiles.forEach(file => {
+        fileNameList.push(file.name);
+        fileUrlList.push(file.url);
+    });
 
-            try {
-                const user = auth.currentUser;
-                if (!user) {
-                    alert('You must be logged in to upload files.');
-                    return;
-                }
+    try {
+        const user = auth.currentUser;
+        if (!user) {
+            alert('You must be logged in to upload files.');
+            return;
+        }
 
-                const promises = fileUrlList.map(async (fileUrl) => {
-                    const q = query(fileCollection, and(
-                        where("uid", "==", user.uid),
-                        where("url", "==", fileUrl)
-                    ));
-                    const querySnapshot = await getDocs(q);
-                    const innerPromises = querySnapshot.docs.map(async (docSnapshot) => {
-                        const fileData = docSnapshot.data();
-                        const response = await fetch(fileUrl);
-                        const text = await response.text();
-                        const { jsPDF } = window.jspdf;
-                        const newdoc = new jsPDF();
-                        const margin = 10;
-                        const pageWidth = newdoc.internal.pageSize.getWidth() - 2 * margin;
-                        const pageHeight = newdoc.internal.pageSize.getHeight() - margin;
-                        const startingY = margin;
-                        const lineHeight = 10;
-                        const textLines = newdoc.splitTextToSize(text, pageWidth);
-                        let currentY = startingY;
-                        textLines.forEach((line) => {
-                            if (currentY + lineHeight > pageHeight) {
-                                newdoc.addPage();
-                                currentY = margin;
-                            }
-                            newdoc.text(line, margin, currentY);
-                            currentY += lineHeight;
-                        });
-                        const pdfBlob = newdoc.output('blob');
-                        const storageRef = ref(storage, 'texts/' + fileData.storageName);
-                        await deleteObject(storageRef);
-                        const newStorageRef = ref(storage, 'documents/' + fileData.storageName);
-                        await uploadBytes(newStorageRef, pdfBlob);
-                        const newurl = await getDownloadURL(newStorageRef);
+        const promises = fileUrlList.map(async (fileUrl) => {
+            const q = query(fileCollection, and(
+                where("uid", "==", user.uid),
+                where("url", "==", fileUrl)
+            ));
+            const querySnapshot = await getDocs(q);
+            const innerPromises = querySnapshot.docs.map(async (docSnapshot) => {
+                const fileData = docSnapshot.data();
+                const response = await fetch(fileUrl);
+                const text = await response.text();
 
-                        // Update Firestore document with new PDF URL
-                        const docRef = docSnapshot.ref;
-                        await updateDoc(docRef, { url: newurl, isOriginal: true });
-                    });
-                    return Promise.all(innerPromises);
+                // Initialize jsPDF with A4 page size
+                const { jsPDF } = window.jspdf;
+                const newdoc = new jsPDF({
+                    format: 'a4', // Standard A4 size
+                    unit: 'pt', // Points for better precision
                 });
 
-                await Promise.all(promises);
-            } catch (error) {
-                console.error('Upload failed:', error);
-            }
-        }
+                const pageWidth = newdoc.internal.pageSize.getWidth();
+                const pageHeight = newdoc.internal.pageSize.getHeight();
+                const margin = 40; // Margin from all sides
+                const maxWidth = pageWidth - 2 * margin;
+
+                // Split the text into lines to fit the page width
+                const lines = newdoc.splitTextToSize(text, maxWidth);
+                let cursorY = margin;
+
+                // Add text to PDF page-by-page
+                lines.forEach((line) => {
+                    if (cursorY + 20 > pageHeight - margin) {
+                        newdoc.addPage(); // Add a new page when content overflows
+                        cursorY = margin; // Reset Y position for new page
+                    }
+                    newdoc.text(line, margin, cursorY);
+                    cursorY += 20; // Move down for the next line
+                });
+
+                const pdfBlob = newdoc.output('blob'); // Create PDF blob
+
+                // Replace old file with the new PDF in Firebase storage
+                const storageRef = ref(storage, 'texts/' + fileData.storageName);
+                await deleteObject(storageRef);
+                const newStorageRef = ref(storage, 'documents/' + fileData.storageName);
+                await uploadBytes(newStorageRef, pdfBlob);
+                const newurl = await getDownloadURL(newStorageRef);
+
+                // Update Firestore document with new PDF URL
+                const docRef = docSnapshot.ref;
+                await updateDoc(docRef, { url: newurl, isOriginal: true });
+            });
+            return Promise.all(innerPromises);
+        });
+
+        await Promise.all(promises);
+    } catch (error) {
+        console.error('Upload failed:', error);
+    }
+}
 
         // call summarize function to create generated text
         function generateSummary(fileUrl) {
