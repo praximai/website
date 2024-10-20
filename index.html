@@ -94,41 +94,6 @@
         </div>
       </div>
     </header>
-    <script type="module">
-        // Import Firebase SDKs
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
-        import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
-    
-        // Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyBZvsBcAoIJLbQc4yINQz78oyCovB4RDTA",
-            authDomain: "praximai-438817.firebaseapp.com",
-            projectId: "praximai-438817",
-            storageBucket: "praximai-438817.appspot.com",
-            messagingSenderId: "274586621759",
-            appId: "1:274586621759:web:b9f20b3da3329327eba58a",
-            measurementId: "G-EQ7HTDC8T3"
-        };
-    
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const auth = getAuth(app);
-    
-        // Login function
-        window.logIn = function() {
-            const provider = new GoogleAuthProvider();
-            signInWithPopup(auth, provider)
-                .then((result) => {
-                    // Redirect after successful login
-                    window.location.href = "./Demo_Page";
-                })
-                .catch((error) => {
-                    // Handle errors
-                    const errorMessage = error.message;
-                    alert(`Login failed: ${errorMessage}`);
-                });
-        };
-    </script>
     <!-- ====== Header End ====== -->
 
     <!-- ====== Hero Start ====== -->
@@ -1036,31 +1001,63 @@
 
       window.document.addEventListener("scroll", onScroll);
     </script>
-    <script>
+    <script type="module">
+      // Import Firebase SDKs
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js";
+      import { getAuth, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-auth.js";
+      import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.14.1/firebase-functions.js";
+  
+      // Firebase configuration
+      const firebaseConfig = {
+          apiKey: "AIzaSyBZvsBcAoIJLbQc4yINQz78oyCovB4RDTA",
+          authDomain: "praximai-438817.firebaseapp.com",
+          projectId: "praximai-438817",
+          storageBucket: "praximai-438817.appspot.com",
+          messagingSenderId: "274586621759",
+          appId: "1:274586621759:web:b9f20b3da3329327eba58a",
+          measurementId: "G-EQ7HTDC8T3"
+      };
+  
+      // Initialize Firebase
+      const app = initializeApp(firebaseConfig);
+      const auth = getAuth(app);
+      const functions = getFunctions(app);
+  
+      // Login function
+      window.logIn = function() {
+          const provider = new GoogleAuthProvider();
+          signInWithPopup(auth, provider)
+              .then((result) => {
+                  // Redirect after successful login
+                  window.location.href = "./Demo_Page";
+              })
+              .catch((error) => {
+                  // Handle errors
+                  const errorMessage = error.message;
+                  alert(`Login failed: ${errorMessage}`);
+              });
+      
+      };
       document.querySelector(".ud-contact-form").addEventListener("submit", function(e) {
-          e.preventDefault();
-      
-          const formData = new FormData(e.target);
-          const data = {
-              fullName: formData.get("fullName"),
-              email: formData.get("email"),
-              phone: formData.get("phone"),
-              message: formData.get("message")
-          };
-          console.log(data);
-      
-          fetch('https://us-central1-praximai-438817.cloudfunctions.net/sendEmail', {
-              method: 'POST',
-              headers: {
-                  'Content-Type': 'application/json'
-              },
-              body: JSON.stringify(data),
-              mode: 'cors'
-          })
-          .then(response => response.json())
-          .then(result => alert("Message Sent!"))
-          .catch(error => console.error('Error:', error));
+        e.preventDefault();
+        const formElement = e.target;
+        const formData = new FormData(formElement);
+        const data = {
+            fullName: formData.get("fullName"),
+            email: formData.get("email"),
+            phone: formData.get("phone"),
+            message: formData.get("message")
+        };
+        const sendEmail = httpsCallable(functions, 'sendEmail');
+        sendEmail(data)
+        .then((response) => {
+          alert("Message Sent!");
+          formElement.reset();
+        })
+        .catch((error) => {
+          console.error('Error sending email:', error);
+        });
       });
-      </script>
+    </script>
   </body>
 </html>
