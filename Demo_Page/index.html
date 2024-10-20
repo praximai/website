@@ -572,7 +572,7 @@
                     alert('You must be logged in to create new files.');
                     return;
                 }
-                const textBlob = new Blob([summaryText], { type: 'text/plain' });
+                const textBlob = new Blob([newtext], { type: 'text/plain' });
                 const modifiedFileName = user.uid + '_' + filename;
                 const storageRef = ref(storage, 'texts/' + modifiedFileName);
                 await uploadBytes(storageRef, textBlob);
