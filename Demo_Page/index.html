@@ -112,7 +112,7 @@
             const chatMessages = document.getElementById('chat-messages');
             
             let nextMessage = document.createElement('p');
-            let botMessage = "I'm loading your documents...";
+            let botMessage = "Give me a minute, I'm reading over your documents!";
             nextMessage.innerHTML = `<strong>Praxim:</strong> ${botMessage}`;
             chatMessages.appendChild(nextMessage);
 
@@ -125,12 +125,7 @@
             }
 
             nextMessage = document.createElement('p');
-            botMessage = "Loading complete";
-            nextMessage.innerHTML = `<strong>Praxim:</strong> ${botMessage}`;
-            chatMessages.appendChild(nextMessage);
-
-            nextMessage = document.createElement('p');
-            botMessage = "Hi, I'm Praxim! How can I help you with this case?";
+            botMessage = "Finished! How can I help you with this case?";
             nextMessage.innerHTML = `<strong>Praxim:</strong> ${botMessage}`;
             chatMessages.appendChild(nextMessage);
 
