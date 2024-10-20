@@ -1047,6 +1047,7 @@
               phone: formData.get("phone"),
               message: formData.get("message")
           };
+          console.log(data);
       
           fetch('https://us-central1-praximai-438817.cloudfunctions.net/sendEmail', {
               method: 'POST',
