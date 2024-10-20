@@ -17,6 +17,7 @@
         <button onclick="document.getElementById('fileUpload').click();">Upload Here</button>
         <ul id="uploaded-file-list"></ul>
         <button id="synthesize-button" class="synthesize-button">Synthesize</button>
+        <button id="download-files-button" class="download-button">Download Selected Files</button>
     </div>
 
     <div class="left-panel" id="left-panel">
@@ -404,6 +405,41 @@
             } catch (error) {
                 console.error('Error listing documents:', error);
             }
+        }
+
+        document.getElementById('download-files-button').addEventListener('click', downloadSelectedFiles);
+
+        function downloadSelectedFiles() {
+            if (selectedFiles.length === 0) {
+                alert('No files selected for download.');
+                return;
+            }
+
+            selectedFiles.forEach(async (file) => {
+                try {
+                    const response = await fetch(file.url);
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    const blob = await response.blob();
+                    const downloadUrl = URL.createObjectURL(blob);
+
+                    // Create a temporary anchor element for downloading the file
+                    const a = document.createElement('a');
+                    a.href = downloadUrl;
+                    a.download = file.name;  // Set the download filename
+                    document.body.appendChild(a);
+                    a.click();
+
+                    // Clean up after download
+                    setTimeout(() => {
+                        document.body.removeChild(a);
+                        URL.revokeObjectURL(downloadUrl);
+                    }, 100);
+                } catch (error) {
+                    console.error(`Error downloading ${file.name}:`, error);
+                }
+            });
         }
         // add to generate menu
         const generateMenu = document.getElementById('generated-file-list');
