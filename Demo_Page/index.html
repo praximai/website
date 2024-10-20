@@ -17,6 +17,7 @@
         <div style="display: flex; gap: 10px; justify-content: center; margin-top: 10px;">
             <button onclick="document.getElementById('fileUpload').click();">Upload</button>
             <button id="download-files-button" class="download-button">Download Selected File</button>
+            <button id="delete-files-button" class="delete-button" >Delete Selected Files</button>
         </div>
         
         <input type="file" id="fileUpload" accept=".pdf" style="display:none;">
@@ -24,7 +25,6 @@
         <ul id="uploaded-file-list"></ul>
         
         <button id="synthesize-button" class="synthesize-button">Synthesize</button>
-        <button id="delete-files-button" class="delete-button" >Delete Selected Files</button>
     </div>
 
     <div class="left-panel" id="left-panel">
