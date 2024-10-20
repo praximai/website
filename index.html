@@ -1036,5 +1036,29 @@
 
       window.document.addEventListener("scroll", onScroll);
     </script>
+    <script>
+      document.querySelector(".ud-contact-form").addEventListener("submit", function(e) {
+          e.preventDefault();
+      
+          const formData = new FormData(e.target);
+          const data = {
+              fullName: formData.get("fullName"),
+              email: formData.get("email"),
+              phone: formData.get("phone"),
+              message: formData.get("message")
+          };
+      
+          fetch('https://us-central1-praximai-438817.cloudfunctions.net/sendEmail', {
+              method: 'POST',
+              headers: {
+                  'Content-Type': 'application/json'
+              },
+              body: JSON.stringify(data)
+          })
+          .then(response => response.json())
+          .then(result => alert("Message Sent!"))
+          .catch(error => console.error('Error:', error));
+      });
+      </script>
   </body>
 </html>
