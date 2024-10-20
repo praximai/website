@@ -24,7 +24,7 @@
         <ul id="uploaded-file-list"></ul>
         
         <button id="synthesize-button" class="synthesize-button">Synthesize</button>
-        <button id="delete-files-button" class="delete-button" onclick="deleteFiles()">Delete Selected Files</button>
+        <button id="delete-files-button" class="delete-button" >Delete Selected Files</button>
     </div>
 
     <div class="left-panel" id="left-panel">
@@ -319,8 +319,9 @@
                 alert('Please upload a PDF file.');
             }
         });
-
-        async function deleteFiles(){
+        
+        const deleteFiles = document.getElementById('delete-files-button');
+        deleteFiles.addEventListener('change', async (event) => {
             let fileNameList = [];
             selectedFiles.forEach(file => {
                 fileNameList.push(file.name);
@@ -362,6 +363,7 @@
                 console.error('Error querying and processing files:', error);
             }
         }
+
 
         // create ORIGINAL list
         import { query, where, and} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
