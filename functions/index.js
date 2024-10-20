@@ -43,7 +43,7 @@ exports.sendEmail = onCall(async (data, context) => {
   logger.info("Received full name:", fullName);
   logger.info("Received email:", email);
   const mailOptions = {
-    from: email,
+    from: 'business@praxim.ai',
     to: "business@praxim.ai",
     subject: `Contact Form Submission from ${fullName}`,
     text: `You have a new message from your website contact form:
