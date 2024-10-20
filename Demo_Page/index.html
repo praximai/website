@@ -320,49 +320,51 @@
             }
         });
         
-        document.getElementById('delete-files-button').addEventListener('click', deleteFiles);
-        async function deleteFiles() {
-            if (selectedFiles.length === 0) {
-                alert('No files selected for deletion.');
-                return;
-            }
-
+        const deleteFiles = document.getElementById('delete-files-button');
+        deleteFiles.addEventListener('click', async (event) => {
+            let fileNameList = [];
+            selectedFiles.forEach(file => {
+                fileNameList.push(file.name);
+            });
+            selectedGeneratedFiles.forEach(file => {
+                fileNameList.push(file.name);
+            });
             const user = auth.currentUser;
             if (!user) {
-                alert('You must be logged in to delete files.');
+                console.log('No user signed in.');
                 return;
             }
-
             try {
-                const promises = selectedFiles.map(async (file) => {
-                    const q = query(fileCollection, where('uid', '==', user.uid), where('url', '==', file.url));
+                const promises = fileNameList.map(async (filename) => {
+                    const q = query(fileCollection, and(
+                        where("uid", "==", user.uid),
+                        where("name", "==", filename)
+                    ));
                     const querySnapshot = await getDocs(q);
-
                     const innerPromises = querySnapshot.docs.map(async (docSnapshot) => {
                         const fileData = docSnapshot.data();
-                        await deleteDoc(docSnapshot.ref);  // Delete from Firestore
-
-                        const storagePath = fileData.isOriginal 
-                            ? `documents/${fileData.storageName}` 
-                            : `texts/${fileData.storageName}`;
-                        const storageRef = ref(storage, storagePath);
-                        await deleteObject(storageRef);  // Delete from Firebase Storage
+                        await deleteDoc(docSnapshot.ref);
+                        if (fileData.isOriginal === true){
+                            const storageRef = ref(storage, 'documents/' + fileData.storageName);
+                            await deleteObject(storageRef);
+                        } else {
+                            const storageRef = ref(storage, 'texts/' + fileData.storageName);
+                            await deleteObject(storageRef);
+                        }
                     });
-
                     return Promise.all(innerPromises);
                 });
-
                 await Promise.all(promises);
-                alert('Selected files deleted successfully.');
-
-                // Clear the selected files array and refresh the list
-                selectedFiles = [];
+                selectedFiles = []
+                selectedGeneratedFiles = []
                 listDocuments();
+                listGenerateDocuments();
             } catch (error) {
-                console.error('Error deleting files:', error);
-                alert('Failed to delete files.');
+                console.error('Error querying and processing files:', error);
             }
-        }
+        });
+
+
         // create ORIGINAL list
         import { query, where, and} from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore.js';
         const fileMenu = document.getElementById('uploaded-file-list');
