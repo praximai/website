@@ -40,6 +40,8 @@ exports.sendEmail = onCall(async (data, context) => {
   const email = data.email;
   const phone = data.phone;
   const message = data.message;
+  logger.info("Received full name:", fullName);
+  logger.info("Received email:", email);
   const mailOptions = {
     from: email,
     to: "business@praxim.ai",

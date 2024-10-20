@@ -1049,12 +1049,14 @@
             message: formData.get("message")
         };
         const sendEmail = httpsCallable(functions, 'sendEmail');
+        console.log("sending email");
         sendEmail(data)
         .then((response) => {
           alert("Message Sent!");
           formElement.reset();
         })
         .catch((error) => {
+          console.log("BAD!!!!");
           console.error('Error sending email:', error);
         });
       });
