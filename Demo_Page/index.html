@@ -747,36 +747,6 @@
             }
         });
 
-        function uploadNew(filename) {
-            console.log(`Creating new file: ${filename}`);
-            // Add logic for file creation, e.g., uploading an empty file or initializing in Firestore
-            const user = auth.currentUser;
-            if (!user) {
-                alert('You must be logged in to create a new file.');
-                return;
-            }
-
-            const storageRef = ref(storage, 'documents/' + user.uid + '_' + filename + '.txt');
-            const emptyBlob = new Blob([''], { type: 'text/plain' });
-
-            uploadBytes(storageRef, emptyBlob)
-                .then(async () => {
-                    const newUrl = await getDownloadURL(storageRef);
-                    await addDoc(fileCollection, {
-                        name: filename,
-                        storageName: user.uid + '_' + filename + '.txt',
-                        url: newUrl,
-                        uid: user.uid,
-                        isOriginal: false
-                    });
-                    alert(`New file '${filename}' created successfully!`);
-                    listGenerateDocuments();  // Refresh the generated files list
-                })
-                .catch((error) => {
-                    console.error('Error creating new file:', error);
-                });
-        }
-
         // gets all generated text
         async function getGeneratedText(){
             const user = auth.currentUser;
