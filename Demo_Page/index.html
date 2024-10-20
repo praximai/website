@@ -690,6 +690,10 @@
             selectedGeneratedFiles = [];
             listDocuments();
             listGenerateDocuments();
+            const textEditor = document.getElementById('text-editor');
+            textEditor.value = []; // Load text into textarea
+            textEditor.dataset.fileName = [];
+            textEditor.dataset.fileUrl = [];
         });
 
         // replaces generated text with pdf and moves to upload files
