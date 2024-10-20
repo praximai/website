@@ -563,6 +563,33 @@
             }
         });
 
+        // upload a new file to generated storage
+        async function uploadNew(filename) {
+            try{
+                const newtext = "";
+                const user = auth.currentUser;
+                if (!user) {
+                    alert('You must be logged in to create new files.');
+                    return;
+                }
+                const textBlob = new Blob([summaryText], { type: 'text/plain' });
+                const modifiedFileName = user.uid + '_' + filename;
+                const storageRef = ref(storage, 'texts/' + modifiedFileName);
+                await uploadBytes(storageRef, textBlob);
+                const url = await getDownloadURL(storageRef);
+                await addDoc(fileCollection, {
+                    name: filename,
+                    storageName: modifiedFileName,
+                    url: url,
+                    uid: user.uid,
+                    isOriginal: false
+                });
+            } catch (error) {
+                console.error('Upload failed:', error);
+            }
+            await listGeneratedDocuments();
+            await displayGeneratedText(filename, url);
+        }
 
         // update the generated storage
         async function uploadGeneration(filename, fileUrl) {
